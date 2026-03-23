@@ -1,0 +1,34 @@
+# === OS ===
+.DS_Store
+Thumbs.db
+
+# === IDE ===
+.idea/
+.vscode/
+*.sw?
+
+# === Node.js ===
+node_modules/
+dist/
+
+# === Python ===
+__pycache__/
+*.py[cod]
+.venv/
+*.egg-info/
+
+# === Rust ===
+src-tauri/target/
+
+# === 环境与密钥 ===
+.env
+.env.*
+!.env.example
+!.env.template
+
+# === 日志 ===
+logs/
+*.log
+
+# === 构建缓存 ===
+.cache/

@@ -1,0 +1,18 @@
+{
+  "name": "sealclaw-workspace",
+  "private": true,
+  "version": "0.1.0",
+  "description": "SealClaw monorepo workspace",
+  "workspaces": [
+    "packages/*",
+    "desktop-client"
+  ],
+  "scripts": {
+    "dev:desktop": "npm -w desktop-client run dev",
+    "build:desktop": "npm -w desktop-client run build",
+    "build:shared": "npm -w @sealclaw/shared run build",
+    "lint": "npm -ws --if-present run lint",
+    "format": "npm -ws --if-present run format",
+    "format:check": "npm -ws --if-present run format:check"
+  }
+}
