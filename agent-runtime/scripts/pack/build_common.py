@@ -81,8 +81,8 @@ def main() -> int:
     )
     parser.add_argument(
         "--python",
-        default="3.10",
-        help="Python version for conda env (default: 3.10)",
+        default="3.12",
+        help="Python version for conda env (default: 3.12)",
     )
     parser.add_argument(
         "--wheel",
