@@ -1,6 +1,6 @@
 # Multi-Agent Workspace
 
-CoPaw supports **multi-agent workspace**, allowing you to run multiple independent AI agents in a single CoPaw instance, each with its own configuration, memory, skills, and conversation history.
+SealClaw supports **multi-agent workspace**, allowing you to run multiple independent AI agents in a single SealClaw instance, each with its own configuration, memory, skills, and conversation history.
 
 > This feature was introduced in **v0.1.0**.
 
@@ -8,7 +8,7 @@ CoPaw supports **multi-agent workspace**, allowing you to run multiple independe
 
 ## What is Multi-Agent?
 
-Simply put, **multi-agent** lets you run multiple "personas" in one CoPaw, where each persona:
+Simply put, **multi-agent** lets you run multiple "personas" in one SealClaw, where each persona:
 
 - Has its own **personality and specialization** (configured via different persona files)
 - Remembers **its own conversations** (no cross-talk)
@@ -33,7 +33,7 @@ Each agent focuses on its domain without interference.
 
 ### Use Case 2: Platform Separation
 
-You might use CoPaw across multiple platforms:
+You might use SealClaw across multiple platforms:
 
 - **DingTalk** - work-related conversations
 - **Discord** - community discussions
@@ -58,7 +58,7 @@ You might need:
 
 #### 1. View and Switch Agents
 
-After starting CoPaw, you'll see the **Agent Selector** in the **top-right corner** of the console:
+After starting SealClaw, you'll see the **Agent Selector** in the **top-right corner** of the console:
 
 ```
 ┌───────────────────────────────────┐
@@ -194,7 +194,7 @@ Yes. If you configure different agents for DingTalk and Discord, they can respon
 
 Click the delete button in the "Settings → Agent Management" page in console.
 
-**Note**: After deletion, the workspace directory is retained (to prevent accidental data loss). To completely remove it, manually delete the `~/.copaw/workspaces/{agent_id}` directory.
+**Note**: After deletion, the workspace directory is retained (to prevent accidental data loss). To completely remove it, manually delete the `~/.sealclaw/workspaces/{agent_id}` directory.
 
 ### Q: Can the default agent be deleted?
 
@@ -219,7 +219,7 @@ Not recommended. The `default` agent is the system's default fallback; deleting 
 
 ## Upgrading from Single-Agent
 
-If you previously used CoPaw **v0.0.x**, upgrading to **v0.1.0** will **automatically migrate**:
+If you previously used SealClaw **v0.0.x**, upgrading to **v0.1.0** will **automatically migrate**:
 
 1. **Automatic Migration on First Start**
 
@@ -228,14 +228,14 @@ If you previously used CoPaw **v0.0.x**, upgrading to **v0.1.0** will **automati
 
 2. **Verify Migration**
 
-   - After starting CoPaw, check the agent list in console
+   - After starting SealClaw, check the agent list in console
    - You should see an agent named "Default Agent"
    - Your old conversations and configs should still be there
 
 3. **Backup Recommendation**
    Back up your working directory before upgrading:
    ```bash
-   cp -r ~/.copaw ~/.copaw.backup
+   cp -r ~/.sealclaw ~/.sealclaw.backup
    ```
 
 ---
@@ -250,12 +250,12 @@ All multi-agent-aware CLI commands accept the `--agent-id` parameter (defaults t
 
 ```bash
 # View specific agent's configuration
-copaw channels list --agent-id abc123
-copaw cron list --agent-id abc123
-copaw skills list --agent-id abc123
+sealclaw channels list --agent-id abc123
+sealclaw cron list --agent-id abc123
+sealclaw skills list --agent-id abc123
 
 # Create cron job for specific agent
-copaw cron create \
+sealclaw cron create \
   --agent-id abc123 \
   --type agent \
   --name "Check Todos" \
@@ -268,18 +268,18 @@ copaw cron create \
 
 **Commands Supporting `--agent-id`**:
 
-- `copaw channels` - channel management
-- `copaw cron` - cron jobs
-- `copaw daemon` - runtime status
-- `copaw chats` - chat management
-- `copaw skills` - skill management
+- `sealclaw channels` - channel management
+- `sealclaw cron` - cron jobs
+- `sealclaw daemon` - runtime status
+- `sealclaw chats` - chat management
+- `sealclaw skills` - skill management
 
 **Commands NOT Supporting `--agent-id`** (global operations):
 
-- `copaw init` - initialization
-- `copaw providers` - model providers
-- `copaw models` - model configuration
-- `copaw env` - environment variables
+- `sealclaw init` - initialization
+- `sealclaw providers` - model providers
+- `sealclaw models` - model configuration
+- `sealclaw env` - environment variables
 
 ### REST API
 
@@ -326,7 +326,7 @@ If you need to directly edit configuration files:
 #### Old Structure (v0.0.x)
 
 ```
-~/.copaw/
+~/.sealclaw/
 ├── config.json          # All config
 ├── chats.json
 ├── jobs.json
@@ -337,7 +337,7 @@ If you need to directly edit configuration files:
 #### New Structure (v0.1.0+)
 
 ```
-~/.copaw/
+~/.sealclaw/
 ├── config.json          # Global config (providers, agents.profiles)
 └── workspaces/
     ├── default/         # Default agent workspace

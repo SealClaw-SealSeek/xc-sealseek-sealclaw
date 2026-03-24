@@ -14,7 +14,7 @@
 |                        | 智能体间竞争与冲突的解决                                                                                    | 计划中   |
 |                        | 多智能体通信                                                                                                | 计划中   |
 | **多模态**             | 语音/视频通话与实时交互                                                                                     | 进行中   |
-| **大小模型协同**       | 针对 CoPaw 工作流与敏感数据场景的本地小模型训练与微调                                                       | 进行中   |
+| **大小模型协同**       | 针对 SealClaw 工作流与敏感数据场景的本地小模型训练与微调                                                       | 进行中   |
 |                        | 多模型路由。本地模型处理敏感数据，云端模型负责规划与编码；兼顾隐私、性能与能力                              | 计划中   |
 | **记忆系统**           | 经验沉淀技能提炼                                                                                            | 进行中   |
 |                        | 多模态记忆融合增强                                                                                          | 计划中   |
@@ -33,9 +33,9 @@ _状态说明：**进行中** — 正在推进；**计划中** — 已排期或�
 
 ## 参与贡献
 
-CoPaw 在开放协作中持续演进，欢迎各种形式的参与！请参考上表（尤其是标记为 **征集中** 的项）选择你感兴趣的方向，并阅读 [CONTRIBUTING](https://github.com/agentscope-ai/CoPaw/blob/main/CONTRIBUTING.md) 了解如何开始。我们特别欢迎：
+SealClaw 在开放协作中持续演进，欢迎各种形式的参与！请参考上表（尤其是标记为 **征集中** 的项）选择你感兴趣的方向，并阅读 [CONTRIBUTING](https://github.com/agentscope-ai/SealClaw/blob/main/CONTRIBUTING.md) 了解如何开始。我们特别欢迎：
 
 - **横向拓展** — 新频道、模型提供商、技能、MCP。
 - **已有功能扩展与完善** — 展示与交互优化、下载提示、Windows 路径兼容等。
 
-欢迎在 [GitHub Discussions](https://github.com/agentscope-ai/CoPaw/discussions) 参与讨论、提出想法或认领任务。
+欢迎在 [GitHub Discussions](https://github.com/agentscope-ai/SealClaw/discussions) 参与讨论、提出想法或认领任务。

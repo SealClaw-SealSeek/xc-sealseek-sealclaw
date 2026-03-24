@@ -14,12 +14,12 @@ This page covers:
 
 By default, all config and data live in one folder — the **working directory**:
 
-- **`~/.copaw`** (the `.copaw` folder under your home directory)
+- **`~/.sealclaw`** (the `.sealclaw` folder under your home directory)
 
-Starting from **v0.1.0**, CoPaw supports **multi-agent workspace**. When you run `copaw init`, the new structure looks like:
+Starting from **v0.1.0**, SealClaw supports **multi-agent workspace**. When you run `sealclaw init`, the new structure looks like:
 
 ```
-~/.copaw/
+~/.sealclaw/
 ├── config.json              # Global config (providers, environment variables)
 └── workspaces/
     ├── default/             # Default agent workspace
@@ -37,14 +37,14 @@ Starting from **v0.1.0**, CoPaw supports **multi-agent workspace**. When you run
 
 ### Directory Explanation
 
-**Global Directory (`~/.copaw/`)**
+**Global Directory (`~/.sealclaw/`)**
 
 | File / Directory | Purpose                                               |
 | ---------------- | ----------------------------------------------------- |
 | `config.json`    | Global config (model providers, env vars, agent list) |
 | `workspaces/`    | All agent workspace directories                       |
 
-**Agent Workspace (`~/.copaw/workspaces/{agent_id}/`)**
+**Agent Workspace (`~/.sealclaw/workspaces/{agent_id}/`)**
 
 | File / Directory     | Purpose                                                      |
 | -------------------- | ------------------------------------------------------------ |
@@ -60,7 +60,7 @@ Starting from **v0.1.0**, CoPaw supports **multi-agent workspace**. When you run
 
 > **Tip:** `SOUL.md` and `AGENTS.md` are the minimum required Markdown files
 > for the agent's system prompt. Without them, the agent falls back to a
-> generic "You are a helpful assistant" prompt. Run `copaw init` to auto-copy
+> generic "You are a helpful assistant" prompt. Run `sealclaw init` to auto-copy
 > them based on your language choice (`zh` / `en` / `ru`). You can also
 > change the language later via the Console (Agent → Configuration).
 
@@ -70,34 +70,34 @@ Starting from **v0.1.0**, CoPaw supports **multi-agent workspace**. When you run
 
 ## Changing paths with environment variables (optional)
 
-If you don't want to use `~/.copaw`, you can override the working directory or
+If you don't want to use `~/.sealclaw`, you can override the working directory or
 specific file names:
 
 | Variable                 | Default            | Meaning                                                                                                                                                                                 |
 | ------------------------ | ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `COPAW_WORKING_DIR`      | `~/.copaw`         | Working directory; config, heartbeat, jobs, chats, skills, and memory all live here                                                                                                     |
-| `COPAW_SECRET_DIR`       | `~/.copaw.secret`  | Secret directory (sibling of working dir); stores `providers.json` (model provider settings, API keys) and `envs.json` (environment variables). In Docker, set to `/app/working.secret` |
-| `COPAW_CONFIG_FILE`      | `config.json`      | Config file name (relative to working dir)                                                                                                                                              |
-| `COPAW_HEARTBEAT_FILE`   | `HEARTBEAT.md`     | Heartbeat prompt file name (relative to working dir)                                                                                                                                    |
-| `COPAW_JOBS_FILE`        | `jobs.json`        | Cron jobs file name (relative to working dir)                                                                                                                                           |
-| `COPAW_CHATS_FILE`       | `chats.json`       | Chats file name (relative to working dir)                                                                                                                                               |
-| `COPAW_TOKEN_USAGE_FILE` | `token_usage.json` | Token usage record file name (relative to working dir)                                                                                                                                  |
+| `SEALCLAW_WORKING_DIR`      | `~/.sealclaw`         | Working directory; config, heartbeat, jobs, chats, skills, and memory all live here                                                                                                     |
+| `SEALCLAW_SECRET_DIR`       | `~/.sealclaw.secret`  | Secret directory (sibling of working dir); stores `providers.json` (model provider settings, API keys) and `envs.json` (environment variables). In Docker, set to `/app/working.secret` |
+| `SEALCLAW_CONFIG_FILE`      | `config.json`      | Config file name (relative to working dir)                                                                                                                                              |
+| `SEALCLAW_HEARTBEAT_FILE`   | `HEARTBEAT.md`     | Heartbeat prompt file name (relative to working dir)                                                                                                                                    |
+| `SEALCLAW_JOBS_FILE`        | `jobs.json`        | Cron jobs file name (relative to working dir)                                                                                                                                           |
+| `SEALCLAW_CHATS_FILE`       | `chats.json`       | Chats file name (relative to working dir)                                                                                                                                               |
+| `SEALCLAW_TOKEN_USAGE_FILE` | `token_usage.json` | Token usage record file name (relative to working dir)                                                                                                                                  |
 
-| `COPAW_LOG_LEVEL` | `info` | Log level for the app (`debug`, `info`, `warning`, `error`, `critical`) |
-| `COPAW_MEMORY_COMPACT_THRESHOLD` | `100000` | Character threshold to trigger memory compaction |
-| `COPAW_MEMORY_COMPACT_KEEP_RECENT` | `3` | Number of recent messages kept after compaction |
-| `COPAW_MEMORY_COMPACT_RATIO` | `0.7` | Threshold ratio for triggering compaction (relative to context window) |
-| `COPAW_CONSOLE_STATIC_DIR` | _(auto-detect)_ | Path to the console front-end static files |
+| `SEALCLAW_LOG_LEVEL` | `info` | Log level for the app (`debug`, `info`, `warning`, `error`, `critical`) |
+| `SEALCLAW_MEMORY_COMPACT_THRESHOLD` | `100000` | Character threshold to trigger memory compaction |
+| `SEALCLAW_MEMORY_COMPACT_KEEP_RECENT` | `3` | Number of recent messages kept after compaction |
+| `SEALCLAW_MEMORY_COMPACT_RATIO` | `0.7` | Threshold ratio for triggering compaction (relative to context window) |
+| `SEALCLAW_CONSOLE_STATIC_DIR` | _(auto-detect)_ | Path to the console front-end static files |
 
 Example — use a different working dir for this shell:
 
 ```bash
-export COPAW_WORKING_DIR=/home/me/my_copaw
-copaw app
+export SEALCLAW_WORKING_DIR=/home/me/my_sealclaw
+sealclaw app
 ```
 
 Config, HEARTBEAT, jobs, memory, etc. will be read/written under
-`/home/me/my_copaw`.
+`/home/me/my_sealclaw`.
 
 ---
 
@@ -138,7 +138,7 @@ automatically use defaults.
       "app_secret": "",
       "encrypt_key": "",
       "verification_token": "",
-      "media_dir": "~/.copaw/media"
+      "media_dir": "~/.sealclaw/media"
     },
     "qq": {
       "enabled": false,
@@ -225,7 +225,7 @@ Each channel has a common base and channel-specific fields.
 | `app_secret`         | string | `""`             | Feishu App Secret                   |
 | `encrypt_key`        | string | `""`             | Event encryption key (optional)     |
 | `verification_token` | string | `""`             | Event verification token (optional) |
-| `media_dir`          | string | `~/.copaw/media` | Directory for received media files  |
+| `media_dir`          | string | `~/.sealclaw/media` | Directory for received media files  |
 
 **`channels.qq`** — QQ Bot
 
@@ -264,7 +264,7 @@ From **v0.1.0**, the `agents` section now contains agent profiles:
 | `description` | string | No       | Agent description            |
 | `enabled`     | bool   | Yes      | Whether the agent is enabled |
 
-Each agent's detailed configuration is stored in `~/.copaw/workspaces/{agent_id}/agent.json`:
+Each agent's detailed configuration is stored in `~/.sealclaw/workspaces/{agent_id}/agent.json`:
 
 | Field                         | Type           | Default   | Description                                                             |
 | ----------------------------- | -------------- | --------- | ----------------------------------------------------------------------- |
@@ -272,7 +272,7 @@ Each agent's detailed configuration is stored in `~/.copaw/workspaces/{agent_id}
 | `heartbeat`                   | object \| null | See below | Heartbeat configuration                                                 |
 | `running`                     | object         | See below | Agent runtime behavior configuration                                    |
 | `language`                    | string         | `"zh"`    | Language for agent MD files (`"zh"` / `"en"` / `"ru"`)                  |
-| `installed_md_files_language` | string \| null | `null`    | Tracks which language's MD files are installed; managed by `copaw init` |
+| `installed_md_files_language` | string \| null | `null`    | Tracks which language's MD files are installed; managed by `sealclaw init` |
 
 **`agents.running`** — Agent runtime behavior
 
@@ -321,11 +321,11 @@ You can also change it via the Console (Agent → Configuration).
 
 | Field  | Type           | Default | Description                   |
 | ------ | -------------- | ------- | ----------------------------- |
-| `host` | string \| null | `null`  | Last host used by `copaw app` |
-| `port` | int \| null    | `null`  | Last port used by `copaw app` |
+| `host` | string \| null | `null`  | Last host used by `sealclaw app` |
+| `port` | int \| null    | `null`  | Last port used by `sealclaw app` |
 
-This is auto-saved every time you run `copaw app`. Other CLI subcommands
-(like `copaw cron`) use this to know where to send requests.
+This is auto-saved every time you run `sealclaw app`. Other CLI subcommands
+(like `sealclaw cron`) use this to know where to send requests.
 
 ---
 
@@ -353,9 +353,9 @@ channel/user/session.
 
 ## LLM Providers
 
-CoPaw needs an LLM provider to work. You can set it up in three ways:
+SealClaw needs an LLM provider to work. You can set it up in three ways:
 
-- **`copaw init`** — interactive wizard, the easiest way
+- **`sealclaw init`** — interactive wizard, the easiest way
 - **Console UI** — click through the settings page at runtime
 - **API** — `PUT /providers/{id}` and `PUT /providers/active_llm`
 
@@ -387,11 +387,11 @@ Then choose which provider + model to activate:
 | `provider_id` | Which provider to use (e.g. `dashscope`) |
 | `model`       | Which model to use (e.g. `qwen3-max`)    |
 
-> **Tip:** Run `copaw init` and follow the prompts — it will list available
+> **Tip:** Run `sealclaw init` and follow the prompts — it will list available
 > models for each provider so you can pick one directly.
 >
 > **Note:** You are responsible for ensuring the API key and base URL are valid.
-> CoPaw does not verify whether the key is correct or has sufficient quota —
+> SealClaw does not verify whether the key is correct or has sufficient quota —
 > make sure the chosen provider and model are accessible.
 
 ---
@@ -401,7 +401,7 @@ Then choose which provider + model to activate:
 Some tools need extra API keys (e.g. `TAVILY_API_KEY` for web search). You can
 manage them in three ways:
 
-- **`copaw init`** — prompts "Configure environment variables?" during setup
+- **`sealclaw init`** — prompts "Configure environment variables?" during setup
 - **Console UI** — edit on the settings page
 - **API** — `GET/PUT/DELETE /envs`
 
@@ -409,7 +409,7 @@ Set variables are auto-loaded at app startup, so all tools and child processes
 can read them via `os.environ`.
 
 > **Note:** You are responsible for ensuring the values (e.g. third-party API
-> keys) are valid. CoPaw only stores and injects them — it does not verify
+> keys) are valid. SealClaw only stores and injects them — it does not verify
 > correctness.
 
 ---
@@ -420,31 +420,31 @@ Skills extend the agent's capabilities. They live in three directories:
 
 | Directory                     | Purpose                                                             |
 | ----------------------------- | ------------------------------------------------------------------- |
-| Built-in (in source code)     | Shipped with CoPaw — docx, pdf, pptx, xlsx, news, email, cron, etc. |
-| `~/.copaw/customized_skills/` | User-created skills                                                 |
-| `~/.copaw/active_skills/`     | Currently active skills (synced from built-in + customized)         |
+| Built-in (in source code)     | Shipped with SealClaw — docx, pdf, pptx, xlsx, news, email, cron, etc. |
+| `~/.sealclaw/customized_skills/` | User-created skills                                                 |
+| `~/.sealclaw/active_skills/`     | Currently active skills (synced from built-in + customized)         |
 
 Each skill is a directory with a `SKILL.md` file (YAML front matter with `name`
 and `description`), and optional `references/` and `scripts/` subdirectories.
 
 Manage skills via:
 
-- `copaw init` (choose all / none / custom during setup)
-- `copaw skills config` (interactive toggle)
+- `sealclaw init` (choose all / none / custom during setup)
+- `sealclaw skills config` (interactive toggle)
 - API endpoints (`/skills/...`)
 
 ---
 
 ## Memory
 
-CoPaw has persistent cross-conversation memory: it automatically compresses context and saves key information to Markdown files for long-term retention. See [Memory](./memory.en.md) for full details.
+SealClaw has persistent cross-conversation memory: it automatically compresses context and saves key information to Markdown files for long-term retention. See [Memory](./memory.en.md) for full details.
 
 Memory files are stored in two locations:
 
 | File / Directory                | Purpose                                                               |
 | ------------------------------- | --------------------------------------------------------------------- |
-| `~/.copaw/MEMORY.md`            | Long-lived key information (decisions, preferences, persistent facts) |
-| `~/.copaw/memory/YYYY-MM-DD.md` | Daily logs (notes, runtime context, auto-generated summaries)         |
+| `~/.sealclaw/MEMORY.md`            | Long-lived key information (decisions, preferences, persistent facts) |
+| `~/.sealclaw/memory/YYYY-MM-DD.md` | Daily logs (notes, runtime context, auto-generated summaries)         |
 
 ### Embedding Configuration
 
@@ -464,17 +464,17 @@ Recommended to configure in `agent.json` under `running.embedding_config`, which
 
 ## Summary
 
-- Everything lives under **`~/.copaw`** by default; override with
-  `COPAW_WORKING_DIR` (and related env vars) if needed.
+- Everything lives under **`~/.sealclaw`** by default; override with
+  `SEALCLAW_WORKING_DIR` (and related env vars) if needed.
 - From **v0.1.0**, configuration is split into:
-  - **Global config** (`~/.copaw/config.json`) — providers, environment variables, agent list
-  - **Agent config** (`~/.copaw/workspaces/{agent_id}/agent.json`) — per-agent settings
+  - **Global config** (`~/.sealclaw/config.json`) — providers, environment variables, agent list
+  - **Agent config** (`~/.sealclaw/workspaces/{agent_id}/agent.json`) — per-agent settings
 - Day-to-day you edit agent-specific **agent.json** (channels, heartbeat, language) and
   **HEARTBEAT.md** (what to ask on each heartbeat tick); manage cron jobs
   via CLI/API with `--agent-id` parameter.
 - Each agent's personality is defined by Markdown files in its workspace directory:
   **SOUL.md** + **AGENTS.md** (required).
-- LLM providers are globally configured via `copaw init` or the console UI.
+- LLM providers are globally configured via `sealclaw init` or the console UI.
 - Config changes to channels are **auto-reloaded** without restart (polled
   every 2 seconds).
 - Call the Agent API: **POST** `/agent/process` with `X-Agent-Id` header, JSON body, SSE streaming;

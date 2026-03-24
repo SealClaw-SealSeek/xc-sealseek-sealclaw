@@ -1,6 +1,6 @@
 # 安全
 
-CoPaw 内置了安全功能，保护你的 Agent 免受恶意输入和不安全技能的影响。这些功能在控制台 **设置 → 安全** 中配置，也可以通过 `config.json` 进行设置。
+SealClaw 内置了安全功能，保护你的 Agent 免受恶意输入和不安全技能的影响。这些功能在控制台 **设置 → 安全** 中配置，也可以通过 `config.json` 进行设置。
 
 ---
 
@@ -71,7 +71,7 @@ CoPaw 内置了安全功能，保护你的 Agent 免受恶意输入和不安全�
 | **仅提醒**（默认） | 扫描并记录发现，但允许技能继续使用。显示警告通知。 |
 | **关闭**           | 完全禁用扫描。                                     |
 
-在控制台（**设置 → 安全 → 技能扫描器 → 扫描模式**）或通过环境变量 `COPAW_SKILL_SCAN_MODE`（`block`、`warn` 或 `off`）设置。环境变量优先于配置文件。
+在控制台（**设置 → 安全 → 技能扫描器 → 扫描模式**）或通过环境变量 `SEALCLAW_SKILL_SCAN_MODE`（`block`、`warn` 或 `off`）设置。环境变量优先于配置文件。
 
 ### 扫描告警
 
@@ -87,11 +87,11 @@ CoPaw 内置了安全功能，保护你的 Agent 免受恶意输入和不安全�
 
 ### 自定义规则
 
-扫描器使用 `src/copaw/security/skill_scanner/rules/signatures/` 中的 YAML 规则文件。你可以通过 YAML 策略文件自定义扫描策略：
+扫描器使用 `src/sealclaw/security/skill_scanner/rules/signatures/` 中的 YAML 规则文件。你可以通过 YAML 策略文件自定义扫描策略：
 
 ```python
-from copaw.security.skill_scanner import SkillScanner
-from copaw.security.skill_scanner.scan_policy import ScanPolicy
+from sealclaw.security.skill_scanner import SkillScanner
+from sealclaw.security.skill_scanner.scan_policy import ScanPolicy
 
 policy = ScanPolicy.from_yaml("my_org_policy.yaml")
 scanner = SkillScanner(policy=policy)
@@ -117,43 +117,43 @@ scanner = SkillScanner(policy=policy)
 
 ## Web 登录认证
 
-CoPaw 支持可选的 Web 登录认证，保护控制台免受未授权访问。认证**默认关闭**，需要通过 `COPAW_AUTH_ENABLED` 环境变量显式启用。关闭时，CoPaw 的行为与默认配置完全一致 — 无登录页面，无令牌检查。
+SealClaw 支持可选的 Web 登录认证，保护控制台免受未授权访问。认证**默认关闭**，需要通过 `SEALCLAW_AUTH_ENABLED` 环境变量显式启用。关闭时，SealClaw 的行为与默认配置完全一致 — 无登录页面，无令牌检查。
 
 ### 工作原理
 
-1. 设置 `COPAW_AUTH_ENABLED=true` 并启动 CoPaw。
+1. 设置 `SEALCLAW_AUTH_ENABLED=true` 并启动 SealClaw。
 2. 首次访问时，控制台显示**注册页面** — 创建管理员账户（用户名 + 密码）。
 3. 注册完成后，后续访问显示**登录页面**。
 4. 每个部署只能注册**一个账户**（单用户模式，专为个人使用设计）。
 5. 登录后，签名令牌（有效期 7 天）存储在浏览器的 localStorage 中，所有 API 请求自动携带该令牌。
-6. 来自**本地**（`127.0.0.1` / `::1`）的请求自动跳过认证，因此 CLI 命令（`copaw app`、`copaw chat` 等）无需令牌即可正常工作。
+6. 来自**本地**（`127.0.0.1` / `::1`）的请求自动跳过认证，因此 CLI 命令（`sealclaw app`、`sealclaw chat` 等）无需令牌即可正常工作。
 
 ### 环境变量
 
 | 变量                  | 说明                       | 是否必填         |
 | --------------------- | -------------------------- | ---------------- |
-| `COPAW_AUTH_ENABLED`  | 设为 `true` 启用认证       | 是               |
-| `COPAW_AUTH_USERNAME` | 首次启动时预设管理员用户名 | 可选（自动注册） |
-| `COPAW_AUTH_PASSWORD` | 首次启动时预设管理员密码   | 可选（自动注册） |
+| `SEALCLAW_AUTH_ENABLED`  | 设为 `true` 启用认证       | 是               |
+| `SEALCLAW_AUTH_USERNAME` | 首次启动时预设管理员用户名 | 可选（自动注册） |
+| `SEALCLAW_AUTH_PASSWORD` | 首次启动时预设管理员密码   | 可选（自动注册） |
 
-- `COPAW_AUTH_ENABLED=true` 是启用认证唯一必需的变量。
-- `COPAW_AUTH_USERNAME` 和 `COPAW_AUTH_PASSWORD` 为可选项。当两者都设置且尚未注册过用户时，CoPaw 会在启动时自动创建管理员账户 — 适用于 Docker 编排、Kubernetes、服务器管理面板（1Panel、Portainer、CasaOS 等）及其他无法通过浏览器交互注册的自动化部署场景。
+- `SEALCLAW_AUTH_ENABLED=true` 是启用认证唯一必需的变量。
+- `SEALCLAW_AUTH_USERNAME` 和 `SEALCLAW_AUTH_PASSWORD` 为可选项。当两者都设置且尚未注册过用户时，SealClaw 会在启动时自动创建管理员账户 — 适用于 Docker 编排、Kubernetes、服务器管理面板（1Panel、Portainer、CasaOS 等）及其他无法通过浏览器交互注册的自动化部署场景。
 - 如果不设置自动注册变量，首次访问时通过网页注册第一个用户（原有行为不变）。
 
 ### 启用认证
 
 #### 脚本安装 / pip 安装
 
-在启动前设置环境变量。如需自动创建管理员账户，可同时设置 `COPAW_AUTH_USERNAME` 和 `COPAW_AUTH_PASSWORD`。
+在启动前设置环境变量。如需自动创建管理员账户，可同时设置 `SEALCLAW_AUTH_USERNAME` 和 `SEALCLAW_AUTH_PASSWORD`。
 
 **Linux / macOS：**
 
 ```bash
-export COPAW_AUTH_ENABLED=true
+export SEALCLAW_AUTH_ENABLED=true
 # 可选：预设管理员凭据，实现自动注册
-# export COPAW_AUTH_USERNAME=admin
-# export COPAW_AUTH_PASSWORD=mypassword
-copaw app
+# export SEALCLAW_AUTH_USERNAME=admin
+# export SEALCLAW_AUTH_PASSWORD=mypassword
+sealclaw app
 ```
 
 如需永久生效，将 `export` 行添加到 `~/.bashrc`、`~/.zshrc` 或等效文件中。
@@ -161,21 +161,21 @@ copaw app
 **Windows (CMD)：**
 
 ```cmd
-set COPAW_AUTH_ENABLED=true
+set SEALCLAW_AUTH_ENABLED=true
 rem 可选：预设管理员凭据，实现自动注册
-rem set COPAW_AUTH_USERNAME=admin
-rem set COPAW_AUTH_PASSWORD=mypassword
-copaw app
+rem set SEALCLAW_AUTH_USERNAME=admin
+rem set SEALCLAW_AUTH_PASSWORD=mypassword
+sealclaw app
 ```
 
 **Windows (PowerShell)：**
 
 ```powershell
-$env:COPAW_AUTH_ENABLED = "true"
+$env:SEALCLAW_AUTH_ENABLED = "true"
 # 可选：预设管理员凭据，实现自动注册
-# $env:COPAW_AUTH_USERNAME = "admin"
-# $env:COPAW_AUTH_PASSWORD = "mypassword"
-copaw app
+# $env:SEALCLAW_AUTH_USERNAME = "admin"
+# $env:SEALCLAW_AUTH_PASSWORD = "mypassword"
+sealclaw app
 ```
 
 #### Docker
@@ -183,32 +183,32 @@ copaw app
 通过 `-e` 传递环境变量：
 
 ```bash
-docker run -e COPAW_AUTH_ENABLED=true \
-  -e COPAW_AUTH_USERNAME=admin \
-  -e COPAW_AUTH_PASSWORD=mypassword \
+docker run -e SEALCLAW_AUTH_ENABLED=true \
+  -e SEALCLAW_AUTH_USERNAME=admin \
+  -e SEALCLAW_AUTH_PASSWORD=mypassword \
   -p 127.0.0.1:8088:8088 \
-  -v copaw-data:/app/working \
-  -v copaw-secrets:/app/working.secret \
-  agentscope/copaw:latest
+  -v sealclaw-data:/app/working \
+  -v sealclaw-secrets:/app/working.secret \
+  agentscope/sealclaw:latest
 ```
 
-> 如果希望首次访问时通过网页注册，移除 `COPAW_AUTH_USERNAME` 和 `COPAW_AUTH_PASSWORD` 即可。
+> 如果希望首次访问时通过网页注册，移除 `SEALCLAW_AUTH_USERNAME` 和 `SEALCLAW_AUTH_PASSWORD` 即可。
 
 #### docker-compose.yml
 
 ```yaml
 services:
-  copaw:
-    image: agentscope/copaw:latest
+  sealclaw:
+    image: agentscope/sealclaw:latest
     ports:
       - "127.0.0.1:8088:8088"
     environment:
-      - COPAW_AUTH_ENABLED=true
-      - COPAW_AUTH_USERNAME=admin
-      - COPAW_AUTH_PASSWORD=mypassword
+      - SEALCLAW_AUTH_ENABLED=true
+      - SEALCLAW_AUTH_USERNAME=admin
+      - SEALCLAW_AUTH_PASSWORD=mypassword
     volumes:
-      - copaw-data:/app/working
-      - copaw-secrets:/app/working.secret
+      - sealclaw-data:/app/working
+      - sealclaw-secrets:/app/working.secret
 ```
 
 #### 环境文件 (.env)
@@ -216,24 +216,24 @@ services:
 也可以使用 `.env` 文件：
 
 ```
-COPAW_AUTH_ENABLED=true
-COPAW_AUTH_USERNAME=admin
-COPAW_AUTH_PASSWORD=mypassword
+SEALCLAW_AUTH_ENABLED=true
+SEALCLAW_AUTH_USERNAME=admin
+SEALCLAW_AUTH_PASSWORD=mypassword
 ```
 
-然后通过 `--env-file .env` 传递给 Docker，或在运行 `copaw app` 前在 shell 中 source 该文件。
+然后通过 `--env-file .env` 传递给 Docker，或在运行 `sealclaw app` 前在 shell 中 source 该文件。
 
 ### 关闭认证
 
-移除或取消环境变量并重启 CoPaw：
+移除或取消环境变量并重启 SealClaw：
 
 ```bash
 # Linux / macOS
-unset COPAW_AUTH_ENABLED
-copaw app
+unset SEALCLAW_AUTH_ENABLED
+sealclaw app
 
 # Docker — 移除 -e 参数即可。以下示例包含用于持久化的卷。
-docker run -p 127.0.0.1:8088:8088 -v copaw-data:/app/working -v copaw-secrets:/app/working.secret agentscope/copaw:latest
+docker run -p 127.0.0.1:8088:8088 -v sealclaw-data:/app/working -v sealclaw-secrets:/app/working.secret agentscope/sealclaw:latest
 ```
 
 ### 重置密码
@@ -241,7 +241,7 @@ docker run -p 127.0.0.1:8088:8088 -v copaw-data:/app/working -v copaw-secrets:/a
 如果忘记密码，使用 CLI 命令：
 
 ```bash
-copaw auth reset-password
+sealclaw auth reset-password
 ```
 
 该命令会：
@@ -253,10 +253,10 @@ copaw auth reset-password
 Docker 部署时，在容器内运行该命令：
 
 ```bash
-docker exec -it <容器名> copaw auth reset-password
+docker exec -it <容器名> sealclaw auth reset-password
 ```
 
-> **替代方案**：也可以删除 `SECRET_DIR`（默认 `~/.copaw/.secret/`）下的 `auth.json` 文件并重启 CoPaw。这会完全移除已注册的账户，下次访问时可以重新注册。
+> **替代方案**：也可以删除 `SECRET_DIR`（默认 `~/.sealclaw/.secret/`）下的 `auth.json` 文件并重启 SealClaw。这会完全移除已注册的账户，下次访问时可以重新注册。
 
 ### 退出登录
 

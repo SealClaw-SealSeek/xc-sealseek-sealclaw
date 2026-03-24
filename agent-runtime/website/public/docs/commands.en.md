@@ -240,7 +240,7 @@ Load conversation history from a JSONL file into current memory. **Existing memo
 
 ## Daemon Commands (Ops)
 
-In chat, send `/daemon <subcommand>` or use short names (e.g., `/status` is equivalent to `/daemon status`). From the terminal, run `copaw daemon <subcommand>`. These run without going through the Agent.
+In chat, send `/daemon <subcommand>` or use short names (e.g., `/status` is equivalent to `/daemon status`). From the terminal, run `sealclaw daemon <subcommand>`. These run without going through the Agent.
 
 | Command                             | Description                                                                                    |
 | ----------------------------------- | ---------------------------------------------------------------------------------------------- |
@@ -248,12 +248,12 @@ In chat, send `/daemon <subcommand>` or use short names (e.g., `/status` is equi
 | `/daemon restart` or `/restart`     | In-process restart (channels, cron, MCP) when in chat; from CLI prints instructions only       |
 | `/daemon reload-config`             | Re-read and validate config (channel/MCP changes require `/daemon restart` or process restart) |
 | `/daemon version`                   | Version number, working directory, log path                                                    |
-| `/daemon logs` or `/daemon logs 50` | View last N lines of console log (default 100, from `copaw.log` in working directory)          |
+| `/daemon logs` or `/daemon logs 50` | View last N lines of console log (default 100, from `sealclaw.log` in working directory)          |
 
 From the terminal:
 
 ```bash
-copaw daemon status
-copaw daemon version
-copaw daemon logs -n 50
+sealclaw daemon status
+sealclaw daemon version
+sealclaw daemon logs -n 50
 ```

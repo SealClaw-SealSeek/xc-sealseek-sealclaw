@@ -1,10 +1,10 @@
 # 模型
 
-在于CoPaw对话前，需要先配置模型。在 **控制台 → 设置 → 模型** 中可以快捷配置。
+在于SealClaw对话前，需要先配置模型。在 **控制台 → 设置 → 模型** 中可以快捷配置。
 
 ![控制台模型](https://img.alicdn.com/imgextra/i4/O1CN01XnOPPQ1c99vox3I88_!!6000000003557-2-tps-3786-1980.png)
 
-CoPaw 支持多种 LLM 提供商：**云提供商**（需 API Key，包括 Google Gemini）、**本地提供商**（llama.cpp / MLX）、**Ollama 提供商**、**LM Studio 提供商**，且支持添加自定义 **提供商**。本文介绍这几类提供商的配置方式。
+SealClaw 支持多种 LLM 提供商：**云提供商**（需 API Key，包括 Google Gemini）、**本地提供商**（llama.cpp / MLX）、**Ollama 提供商**、**LM Studio 提供商**，且支持添加自定义 **提供商**。本文介绍这几类提供商的配置方式。
 
 ---
 
@@ -54,13 +54,13 @@ Google Gemini 提供商通过 Google 原生 Gemini API（使用 `google-genai` S
 
 ```bash
 # 配置 API Key
-copaw models config-key gemini
+sealclaw models config-key gemini
 
 # 将 Gemini 设为活跃 LLM
-copaw models set-llm
+sealclaw models set-llm
 ```
 
-> **提示：** 具有思考能力的 Gemini 模型（如 Gemini 3.1 Pro、Gemini 2.5 Pro、Gemini 2.5 Flash）支持扩展推理。CoPaw 会自动处理这些模型返回的思考块和思考签名。
+> **提示：** 具有思考能力的 Gemini 模型（如 Gemini 3.1 Pro、Gemini 2.5 Pro、Gemini 2.5 Flash）支持扩展推理。SealClaw 会自动处理这些模型返回的思考块和思考签名。
 
 ## 本地提供商（llama.cpp / MLX）
 
@@ -68,9 +68,9 @@ copaw models set-llm
 
 **前置条件：**
 
-- 在CoPaw所在环境中安装对应后端：
-  - llama.cpp：`pip install 'copaw[llamacpp]'`
-  - MLX：`pip install 'copaw[mlx]'`
+- 在SealClaw所在环境中安装对应后端：
+  - llama.cpp：`pip install 'sealclaw[llamacpp]'`
+  - MLX：`pip install 'sealclaw[mlx]'`
 
 1. 在控制台的模型页面可以找到 llama.cpp 和 MLX 对应的卡片。
 
@@ -106,12 +106,12 @@ copaw models set-llm
 
 ## Ollama 提供商
 
-Ollama 提供商对接本机安装的 **Ollama 守护进程**，使用其中的模型，无需由 CoPaw 直接下载模型文件，列表会与 Ollama 自动同步。
+Ollama 提供商对接本机安装的 **Ollama 守护进程**，使用其中的模型，无需由 SealClaw 直接下载模型文件，列表会与 Ollama 自动同步。
 
 **前置条件：**
 
 - 从 [ollama.com](https://ollama.com) 安装 Ollama。
-- 在 CoPaw所在虚拟环境中安装 Ollama：`pip install 'copaw[ollama]'`。
+- 在 SealClaw所在虚拟环境中安装 Ollama：`pip install 'sealclaw[ollama]'`。
 
 1. 在控制台的模型界面中，可以看到 ollama 提供商对应的卡片。
 
@@ -139,15 +139,15 @@ Ollama 提供商对接本机安装的 **Ollama 守护进程**，使用其中的�
 
    ![name](https://img.alicdn.com/imgextra/i1/O1CN01Qvokvp1xPHoDb9VV1_!!6000000006435-2-tps-3802-1968.png)
 
-> 如果在过程中遇到 `Ollama SDK not installed. Install with: pip install 'copaw[ollama]'`的提示，请先确认是否已经在 ollama.com 下载 Ollama，并在 CoPaw所在虚拟环境中执行过 `pip install 'copaw[ollama]'`。如果想删除某个模型，点击 Ollama 卡片右下角的 **模型**，在模型列表中，点击想要删除的模型右侧的 **垃圾桶按钮**，二次确认后即可删除。
+> 如果在过程中遇到 `Ollama SDK not installed. Install with: pip install 'sealclaw[ollama]'`的提示，请先确认是否已经在 ollama.com 下载 Ollama，并在 SealClaw所在虚拟环境中执行过 `pip install 'sealclaw[ollama]'`。如果想删除某个模型，点击 Ollama 卡片右下角的 **模型**，在模型列表中，点击想要删除的模型右侧的 **垃圾桶按钮**，二次确认后即可删除。
 >
-> **Docker 用户：** 如果 CoPaw 运行在 Docker 容器中，`localhost` 指向的是容器自身而非宿主机。请将 Ollama 的 Base URL 改为 `http://host.docker.internal:11434`（并在 `docker run` 命令中添加 `--add-host=host.docker.internal:host-gateway`）。详见 [README 的 Docker 章节](https://github.com/agentscope-ai/CoPaw#使用-docker)。
+> **Docker 用户：** 如果 SealClaw 运行在 Docker 容器中，`localhost` 指向的是容器自身而非宿主机。请将 Ollama 的 Base URL 改为 `http://host.docker.internal:11434`（并在 `docker run` 命令中添加 `--add-host=host.docker.internal:host-gateway`）。详见 [README 的 Docker 章节](https://github.com/agentscope-ai/SealClaw#使用-docker)。
 >
 > ![delete](https://img.alicdn.com/imgextra/i2/O1CN01p2o85m1Ul9rkY87PS_!!6000000002557-2-tps-3802-1968.png)
 
 ## LM Studio 提供商
 
-LM Studio 提供商连接 **LM Studio** 桌面应用内置的 OpenAI 兼容服务器。模型在 LM Studio 的图形界面中管理，CoPaw 通过 `/v1/models` 端点自动发现已加载的模型。
+LM Studio 提供商连接 **LM Studio** 桌面应用内置的 OpenAI 兼容服务器。模型在 LM Studio 的图形界面中管理，SealClaw 通过 `/v1/models` 端点自动发现已加载的模型。
 
 **前置条件：**
 
@@ -162,11 +162,11 @@ LM Studio 提供商连接 **LM Studio** 桌面应用内置的 OpenAI 兼容服�
 
 4. 在上方的 **LLM 配置** 中，**提供商** 对应的下拉菜单中选择 LM Studio，**模型** 对应的下拉菜单中选择想使用的模型。点击 **保存**。
 
-> **提示：** LM Studio 默认不需要 API Key。如果你在 LM Studio 中启用了认证功能，请在 **API Key** 字段中填入对应的密钥。模型必须在 LM Studio 的图形界面中加载后才会在 CoPaw 中显示。
+> **提示：** LM Studio 默认不需要 API Key。如果你在 LM Studio 中启用了认证功能，请在 **API Key** 字段中填入对应的密钥。模型必须在 LM Studio 的图形界面中加载后才会在 SealClaw 中显示。
 >
-> **重要 — 上下文长度：** LM Studio 加载模型时默认的上下文长度较小（通常为 2048 或 4096 tokens）。CoPaw 的系统提示词（AGENTS.md + SOUL.md + PROFILE.md）可能会超过此限制，导致报错 _"The number of tokens to keep from the initial prompt is greater than the context length"_。解决方法：**在 LM Studio 中卸载模型，然后以更大的上下文长度重新加载**（建议 16384 及以上）。可以在 LM Studio 图形界面中调整（模型设置 → Context Length），也可以通过 CLI 操作：`lms unload --all && lms load <model> -c 16384`。
+> **重要 — 上下文长度：** LM Studio 加载模型时默认的上下文长度较小（通常为 2048 或 4096 tokens）。SealClaw 的系统提示词（AGENTS.md + SOUL.md + PROFILE.md）可能会超过此限制，导致报错 _"The number of tokens to keep from the initial prompt is greater than the context length"_。解决方法：**在 LM Studio 中卸载模型，然后以更大的上下文长度重新加载**（建议 16384 及以上）。可以在 LM Studio 图形界面中调整（模型设置 → Context Length），也可以通过 CLI 操作：`lms unload --all && lms load <model> -c 16384`。
 >
-> **Docker 用户：** 如果 CoPaw 运行在 Docker 容器中，`localhost` 指向的是容器自身而非宿主机。请将 LM Studio 的 Base URL 改为 `http://host.docker.internal:1234/v1`（并在 `docker run` 命令中添加 `--add-host=host.docker.internal:host-gateway`）。详见 [README 的 Docker 章节](https://github.com/agentscope-ai/CoPaw#使用-docker)。
+> **Docker 用户：** 如果 SealClaw 运行在 Docker 容器中，`localhost` 指向的是容器自身而非宿主机。请将 LM Studio 的 Base URL 改为 `http://host.docker.internal:1234/v1`（并在 `docker run` 命令中添加 `--add-host=host.docker.internal:host-gateway`）。详见 [README 的 Docker 章节](https://github.com/agentscope-ai/SealClaw#使用-docker)。
 
 ## 添加自定义提供商
 

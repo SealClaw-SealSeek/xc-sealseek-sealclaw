@@ -1,16 +1,16 @@
 # 控制台
 
-**控制台** 是 CoPaw 内置的 Web 管理界面。运行 `copaw app` 后，在浏览器中打开
+**控制台** 是 SealClaw 内置的 Web 管理界面。运行 `sealclaw app` 后，在浏览器中打开
 `http://127.0.0.1:8088/` 即可进入。
 
 **在控制台中你可以：**
 
-- 和 CoPaw 实时对话
+- 和 SealClaw 实时对话
 - 启用/禁用消息频道
 - 查看和管理所有聊天会话
 - 管理定时任务
-- 编辑 CoPaw 的人设和行为文件
-- 开关技能以扩展 CoPaw 的能力
+- 编辑 SealClaw 的人设和行为文件
+- 开关技能以扩展 SealClaw 的能力
 - 管理MCP客户端
 - 修改运行配置
 - 配置 LLM 提供商并选择使用的模型
@@ -28,12 +28,12 @@
 
 > 侧边栏：**聊天 → 聊天**
 
-这是你和 CoPaw 对话的地方。打开控制台后默认就是这个页面。
+这是你和 SealClaw 对话的地方。打开控制台后默认就是这个页面。
 
 ![聊天](https://img.alicdn.com/imgextra/i4/O1CN01Q0kWkE1WlHCNXeUlb_!!6000000002828-2-tps-3822-2070.png)
 
 **发送消息：**
-在底部输入框中输入内容，按 **Enter** 或点击发送按钮（↑），CoPaw 会实时回复。
+在底部输入框中输入内容，按 **Enter** 或点击发送按钮（↑），SealClaw 会实时回复。
 
 **新建会话：**
 点击聊天页面侧边栏顶部的 **+ New Chat** 按钮，开始一段全新的对话。每个会话独立保存各自的对话记录。
@@ -107,15 +107,15 @@
 
 > 侧边栏：**控制 → 定时任务**
 
-在这里创建和管理 CoPaw 按时间自动执行的定时任务。
+在这里创建和管理 SealClaw 按时间自动执行的定时任务。
 
 ![定时任务](https://img.alicdn.com/imgextra/i1/O1CN01B83KJC1LptPwniEDa_!!6000000001349-2-tps-3822-2070.png)
 
 **创建新任务：**
 
-> 如果定时任务没有创建成功，可以参考 [FAQ](https://copaw.agentscope.io/docs/faq) 的 **定时任务错误排查** 寻找原因
+> 如果定时任务没有创建成功，可以参考 [FAQ](https://sealclaw.io/docs/faq) 的 **定时任务错误排查** 寻找原因
 
-创建定时任务的 **最简单的方式是直接与 CoPaw 对话**，让他为你创建。例如你想在钉钉上收到喝水提醒，则在钉钉上与 CoPaw 对话：“帮我创建一个定时任务，每隔 5 分钟提醒我喝水。”创建完成后，可以在控制台的定时任务页面看到创建好的定时任务。
+创建定时任务的 **最简单的方式是直接与 SealClaw 对话**，让他为你创建。例如你想在钉钉上收到喝水提醒，则在钉钉上与 SealClaw 对话：“帮我创建一个定时任务，每隔 5 分钟提醒我喝水。”创建完成后，可以在控制台的定时任务页面看到创建好的定时任务。
 
 另外一种方式是在控制台页面创建：
 
@@ -127,7 +127,7 @@
    - **基本信息** —— 给任务一个 ID（如 `job-001`）、一个名称（如「每日摘要」），
      并打开启用开关。
    - **调度** —— 填写 Cron 表达式（如 `0 9 * * *` = 每天上午 9 点）并选择时区（默认使用用户配置的时区）。
-   - **任务类型及内容** —— 选择 **文本**（发送固定消息）或 **Agent**（向 CoPaw 提问并
+   - **任务类型及内容** —— 选择 **文本**（发送固定消息）或 **Agent**（向 SealClaw 提问并
      转发回复），然后填入具体内容。
    - **投递** —— 选择目标频道（如 Console、钉钉）、目标用户，以及投递方式
      （**流式** = 实时发送，**最终** = 完成后一次性发送）。
@@ -152,11 +152,11 @@
 
 > 侧边栏：**智能体 → 工作区**
 
-在这里编辑定义 CoPaw 人设和行为的文件——SOUL.md、AGENTS.md、
+在这里编辑定义 SealClaw 人设和行为的文件——SOUL.md、AGENTS.md、
 HEARTBEAT.md 等——全部在浏览器中完成。
 
-> **多智能体工作区：** 从 **v0.1.0** 开始，CoPaw 支持**多智能体工作区**功能。
-> 您可以在同一个 CoPaw 实例中运行多个独立的智能体，每个智能体拥有独立的
+> **多智能体工作区：** 从 **v0.1.0** 开始，SealClaw 支持**多智能体工作区**功能。
+> 您可以在同一个 SealClaw 实例中运行多个独立的智能体，每个智能体拥有独立的
 > 工作区、配置、记忆和对话历史。在控制台顶部可以切换当前操作的智能体。
 > 详见 [多智能体工作区](./multi-agent)。
 
@@ -185,7 +185,7 @@ HEARTBEAT.md 等——全部在浏览器中完成。
 
 > 侧边栏：**智能体 → 技能**
 
-在这里管理扩展 CoPaw 能力的技能（如读取 PDF、创建 Word 文档、获取新闻等）。
+在这里管理扩展 SealClaw 能力的技能（如读取 PDF、创建 Word 文档、获取新闻等）。
 
 ![技能](https://img.alicdn.com/imgextra/i1/O1CN018YXGth1JcUb7KAQ7S_!!6000000001049-2-tps-3822-2070.png)
 
@@ -247,7 +247,7 @@ HEARTBEAT.md 等——全部在浏览器中完成。
 
 > 侧边栏：**设置 → 模型**
 
-在这里配置 LLM 提供商并选择 CoPaw 使用的模型。CoPaw 同时支持云提供商（需要
+在这里配置 LLM 提供商并选择 SealClaw 使用的模型。SealClaw 同时支持云提供商（需要
 API Key）和本地提供商（无需 API Key）。
 
 ![模型](https://img.alicdn.com/imgextra/i4/O1CN01s3hlCB1ieCT8O91Vi_!!6000000004437-2-tps-3822-2070.png)
@@ -270,8 +270,8 @@ API Key）和本地提供商（无需 API Key）。
 ### 本地提供商（llama.cpp / MLX）
 
 本地提供商显示紫色的 **本地** 标签。
-使用前需先安装后端依赖（`pip install 'copaw[llamacpp]'` 或
-`pip install 'copaw[mlx]'`）。
+使用前需先安装后端依赖（`pip install 'sealclaw[llamacpp]'` 或
+`pip install 'sealclaw[mlx]'`）。
 
 **下载模型：**
 
@@ -292,7 +292,7 @@ Ollama 提供商集成本地 Ollama 守护进程，动态加载其中的模型�
 **前置条件：**
 
 - 从 [ollama.com](https://ollama.com) 安装 Ollama
-- 安装 Ollama SDK：`pip install 'copaw[ollama]'`（或使用 `--extras ollama` 重新运行安装脚本）
+- 安装 Ollama SDK：`pip install 'sealclaw[ollama]'`（或使用 `--extras ollama` 重新运行安装脚本）
 
 **下载模型：**
 
@@ -309,15 +309,15 @@ Ollama 提供商集成本地 Ollama 守护进程，动态加载其中的模型�
 
 **与本地模型的区别：**
 
-- 模型来自 Ollama 守护进程（不由 CoPaw 直接下载）
+- 模型来自 Ollama 守护进程（不由 SealClaw 直接下载）
 - 模型列表与 Ollama 自动同步
 - 支持热门模型：`mistral:7b`、`qwen3:8b` 等
 
-> 也可以通过 CLI 管理 Ollama 模型：`copaw models ollama-pull`、`copaw models ollama-list`、`copaw models ollama-remove`。详见 [CLI](./cli#ollama-模型)。
+> 也可以通过 CLI 管理 Ollama 模型：`sealclaw models ollama-pull`、`sealclaw models ollama-list`、`sealclaw models ollama-remove`。详见 [CLI](./cli#ollama-模型)。
 
-> ⚠️ **运行 CoPaw 前必须将上下文长度设为 32K 以上**
+> ⚠️ **运行 SealClaw 前必须将上下文长度设为 32K 以上**
 >
-> 为了正常运行 CoPaw，必须将模型 context length 设置为 **32K 或更高**。注意，这会消耗较多的计算资源，请确保你的本地机器能够支持。
+> 为了正常运行 SealClaw，必须将模型 context length 设置为 **32K 或更高**。注意，这会消耗较多的计算资源，请确保你的本地机器能够支持。
 >
 > ![Ollama context length 配置示意图](https://img.alicdn.com/imgextra/i3/O1CN01JrqRjE1l6FxuO3IMl_!!6000000004769-2-tps-699-656.png)
 
@@ -337,11 +337,11 @@ LM Studio 提供商连接 LM Studio 桌面应用内置的 OpenAI 兼容本地服
 3. 点击 **模型** 查看 LM Studio 中当前已加载的模型，也可手动添加模型 ID。
 4. 在 **提供商** 下拉菜单中选择 LM Studio，选择模型后点击 **保存**。
 
-> LM Studio 默认不需要 API Key。模型必须在 LM Studio 中加载后才会在 CoPaw 中显示。
+> LM Studio 默认不需要 API Key。模型必须在 LM Studio 中加载后才会在 SealClaw 中显示。
 
-> ⚠️ **运行 CoPaw 前必须将上下文长度设为 32K 以上**
+> ⚠️ **运行 SealClaw 前必须将上下文长度设为 32K 以上**
 >
-> 为了正常运行 CoPaw，必须将模型 context length 设置为 **32K 或更高**。注意，这会消耗较多的计算资源，请确保你的本地机器能够支持。
+> 为了正常运行 SealClaw，必须将模型 context length 设置为 **32K 或更高**。注意，这会消耗较多的计算资源，请确保你的本地机器能够支持。
 >
 > ![LM Studio context length 配置示意图](https://img.alicdn.com/imgextra/i4/O1CN01LWyG6o21E4Zovqv4G_!!6000000006952-2-tps-923-618.png)
 
@@ -352,7 +352,7 @@ LM Studio 提供商连接 LM Studio 桌面应用内置的 OpenAI 兼容本地服
 2. 在 **模型** 下拉菜单中选择一个模型。
 3. 点 **保存**。
 
-> **注意：** 云提供商 API Key 的有效性需要用户自行保证，CoPaw 不会验证。
+> **注意：** 云提供商 API Key 的有效性需要用户自行保证，SealClaw 不会验证。
 >
 > 提供商详细说明见 [配置 — 模型提供商](./config#模型提供商)。
 
@@ -362,7 +362,7 @@ LM Studio 提供商连接 LM Studio 桌面应用内置的 OpenAI 兼容本地服
 
 > 侧边栏：**设置 → 环境变量**
 
-在这里管理 CoPaw 的工具和技能在运行时需要的环境变量（如 `TAVILY_API_KEY`）。
+在这里管理 SealClaw 的工具和技能在运行时需要的环境变量（如 `TAVILY_API_KEY`）。
 
 ![环境变量](https://img.alicdn.com/imgextra/i2/O1CN01H5652Z1byAQQ3JVC4_!!6000000003533-2-tps-3822-2070.png)
 
@@ -382,7 +382,7 @@ LM Studio 提供商连接 LM Studio 桌面应用内置的 OpenAI 兼容本地服
 **批量删除：**
 勾选要删除的行 → 点工具栏的 **删除** → 确认删除。
 
-> **注意：** 环境变量值的有效性需要用户自行保证，CoPaw 只负责存储和加载。
+> **注意：** 环境变量值的有效性需要用户自行保证，SealClaw 只负责存储和加载。
 >
 > 更多说明见 [配置 — 环境变量](./config#环境变量)。
 
@@ -402,9 +402,9 @@ LM Studio 提供商连接 LM Studio 桌面应用内置的 OpenAI 兼容本地服
 
 **通过对话查询：**
 
-在聊天中直接问 CoPaw「最近用了多少 token？」或「帮我看看 token 消耗」，Agent 会调用 `get_token_usage` 工具并返回统计结果。
+在聊天中直接问 SealClaw「最近用了多少 token？」或「帮我看看 token 消耗」，Agent 会调用 `get_token_usage` 工具并返回统计结果。
 
-> 数据存储在 `~/.copaw/token_usage.json`，可通过 `COPAW_TOKEN_USAGE_FILE` 环境变量自定义文件名。详见 [配置 — 环境变量](./config#环境变量)。
+> 数据存储在 `~/.sealclaw/token_usage.json`，可通过 `SEALCLAW_TOKEN_USAGE_FILE` 环境变量自定义文件名。详见 [配置 — 环境变量](./config#环境变量)。
 
 ---
 
@@ -412,7 +412,7 @@ LM Studio 提供商连接 LM Studio 桌面应用内置的 OpenAI 兼容本地服
 
 | 页面       | 侧边栏路径        | 你能做什么                                                   |
 | ---------- | ----------------- | ------------------------------------------------------------ |
-| 聊天       | 聊天 → 聊天       | 和 CoPaw 对话、管理会话                                      |
+| 聊天       | 聊天 → 聊天       | 和 SealClaw 对话、管理会话                                      |
 | 频道       | 控制 → 频道       | 启用/禁用频道、填入凭据                                      |
 | 会话       | 控制 → 会话       | 筛选、重命名、删除会话                                       |
 | 定时任务   | 控制 → 定时任务   | 创建/编辑/删除任务、立即执行                                 |

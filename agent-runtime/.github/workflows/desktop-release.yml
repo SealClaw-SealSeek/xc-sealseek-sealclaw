@@ -1,7 +1,8 @@
-# Build CoPaw Desktop: Windows (conda-pack + NSIS), macOS (conda-pack -> .app)
+# Build SealClaw Desktop: Tauri binary + conda-pack Python environment
+# Windows: NSIS installer, macOS: .app bundle
 # Runs automatically on release publish; also manually via Actions tab.
 
-name: CoPaw Desktop Build
+name: SealClaw Desktop Build
 
 on:
   release:
@@ -24,7 +25,7 @@ jobs:
         id: version
         shell: pwsh
         run: |
-          $content = Get-Content src/copaw/__version__.py -Raw
+          $content = Get-Content src/sealclaw/__version__.py -Raw
           if ($content -match '__version__\s*=\s*"([^"]+)"') {
             $v = $Matches[1]
           } else {
@@ -41,12 +42,20 @@ jobs:
           cache: "npm"
           cache-dependency-path: console/package-lock.json
 
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Rust cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: "../desktop-client/src-tauri -> target"
+
       - name: Set up Miniconda
         uses: conda-incubator/setup-miniconda@v3
         with:
           auto-update-conda: true
           python-version: "3.10"
-          activate-environment: "copaw-build"
+          activate-environment: "sealclaw-build"
           condarc-file: .github/condarc
           conda-remove-defaults: false
 
@@ -63,7 +72,7 @@ jobs:
 
       - name: Build Windows installer
         shell: pwsh
-        run: conda run -n copaw-build pwsh -File ./scripts/pack/build_win.ps1
+        run: conda run -n sealclaw-build pwsh -File ./scripts/pack/build_win.ps1
 
       - name: List dist (on failure)
         if: failure()
@@ -79,8 +88,8 @@ jobs:
       - name: Upload Windows artifact
         uses: actions/upload-artifact@v4
         with:
-          name: CoPaw-Desktop-Windows-${{ steps.version.outputs.version }}
-          path: dist/CoPaw-Setup-*.exe
+          name: SealClaw-Desktop-Windows-${{ steps.version.outputs.version }}
+          path: dist/SealClaw-Setup-*.exe
 
   build-macos:
     runs-on: macos-14
@@ -92,7 +101,7 @@ jobs:
 
       - name: Get version
         id: version
-        run: echo "version=$(sed -n 's/^__version__[[:space:]]*=[[:space:]]*"\([^"]*\)".*/\1/p' src/copaw/__version__.py)" >> $GITHUB_OUTPUT
+        run: echo "version=$(sed -n 's/^__version__[[:space:]]*=[[:space:]]*"\([^"]*\)".*/\1/p' src/sealclaw/__version__.py)" >> $GITHUB_OUTPUT
 
       - name: Set up Node
         uses: actions/setup-node@v4
@@ -101,12 +110,20 @@ jobs:
           cache: "npm"
           cache-dependency-path: console/package-lock.json
 
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Rust cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: "../desktop-client/src-tauri -> target"
+
       - name: Set up Miniconda
         uses: conda-incubator/setup-miniconda@v3
         with:
           auto-update-conda: true
           python-version: "3.10"
-          activate-environment: "copaw-build"
+          activate-environment: "sealclaw-build"
           condarc-file: .github/condarc
           conda-remove-defaults: false
 
@@ -116,13 +133,13 @@ jobs:
       - name: Build macOS .app
         run: |
           chmod +x scripts/pack/build_macos.sh
-          conda run -n copaw-build bash -c 'CREATE_ZIP=1 ./scripts/pack/build_macos.sh'
+          conda run -n sealclaw-build bash -c 'CREATE_ZIP=1 ./scripts/pack/build_macos.sh'
 
       - name: Upload macOS artifact
         uses: actions/upload-artifact@v4
         with:
-          name: CoPaw-Desktop-macOS-${{ steps.version.outputs.version }}
-          path: dist/CoPaw-*.zip
+          name: SealClaw-Desktop-macOS-${{ steps.version.outputs.version }}
+          path: dist/SealClaw-*.zip
 
   upload-release:
     needs: [build-windows, build-macos]
@@ -136,15 +153,45 @@ jobs:
 
       - name: Move artifacts to root for upload
         run: |
-          mv CoPaw-Desktop-Windows-*/CoPaw-Setup-*.exe . 2>/dev/null || true
-          mv CoPaw-Desktop-macOS-*/CoPaw-*.zip . 2>/dev/null || true
+          mv SealClaw-Desktop-Windows-*/SealClaw-Setup-*.exe . 2>/dev/null || true
+          mv SealClaw-Desktop-macOS-*/SealClaw-*.zip . 2>/dev/null || true
 
-      - name: Upload to Release
+      - name: Upload to GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            CoPaw-Setup-*.exe
-            CoPaw-*-macOS.zip
-          fail-on-unmatched-files: false
+            SealClaw-Setup-*.exe
+            SealClaw-*-macOS.zip
+          fail_on_unmatched_files: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload to Gitee Release
+        if: ${{ secrets.GITEE_TOKEN != '' }}
+        env:
+          GITEE_TOKEN: ${{ secrets.GITEE_TOKEN }}
+          GITEE_OWNER: ${{ vars.GITEE_OWNER }}
+          GITEE_REPO: ${{ vars.GITEE_REPO }}
+        run: |
+          # 获取 Gitee Release ID（与 GitHub tag 同名）
+          TAG="${GITHUB_REF_NAME}"
+          RELEASE_ID=$(curl -s "https://gitee.com/api/v5/repos/${GITEE_OWNER}/${GITEE_REPO}/releases/tags/${TAG}?access_token=${GITEE_TOKEN}" | jq -r '.id // empty')
+
+          if [ -z "$RELEASE_ID" ]; then
+            echo "Gitee release for tag $TAG not found, creating..."
+            RELEASE_ID=$(curl -s -X POST "https://gitee.com/api/v5/repos/${GITEE_OWNER}/${GITEE_REPO}/releases" \
+              -H "Content-Type: application/json" \
+              -d "{\"access_token\":\"${GITEE_TOKEN}\",\"tag_name\":\"${TAG}\",\"name\":\"${TAG}\",\"body\":\"Auto-uploaded from GitHub Actions\"}" \
+              | jq -r '.id')
+          fi
+
+          echo "Uploading to Gitee Release ID: $RELEASE_ID"
+          for f in SealClaw-Setup-*.exe SealClaw-*-macOS.zip; do
+            [ -f "$f" ] || continue
+            echo "Uploading $f..."
+            curl -s -X POST "https://gitee.com/api/v5/repos/${GITEE_OWNER}/${GITEE_REPO}/releases/${RELEASE_ID}/attach_files" \
+              -H "Content-Type: multipart/form-data" \
+              -F "access_token=${GITEE_TOKEN}" \
+              -F "file=@${f}"
+            echo " -> done"
+          done

@@ -1,6 +1,6 @@
 # Security
 
-CoPaw includes built-in security features to protect your agent from malicious inputs and unsafe skills. These are configured in the Console under **Settings → Security**, or via `config.json`.
+SealClaw includes built-in security features to protect your agent from malicious inputs and unsafe skills. These are configured in the Console under **Settings → Security**, or via `config.json`.
 
 ---
 
@@ -71,7 +71,7 @@ The **Skill Scanner** automatically scans skills for security threats (command i
 | **Warn** (default) | Scan and record findings, but allow the skill to proceed. A warning is shown. |
 | **Off**            | Disable scanning entirely.                                                    |
 
-Set the mode in Console (**Settings → Security → Skill Scanner → Scanner Mode**) or via the environment variable `COPAW_SKILL_SCAN_MODE` (`block`, `warn`, or `off`). The environment variable takes precedence over the config file.
+Set the mode in Console (**Settings → Security → Skill Scanner → Scanner Mode**) or via the environment variable `SEALCLAW_SKILL_SCAN_MODE` (`block`, `warn`, or `off`). The environment variable takes precedence over the config file.
 
 ### Scan Alerts
 
@@ -87,11 +87,11 @@ Whitelisted skills bypass the security scan. Each whitelist entry records the sk
 
 ### Custom rules
 
-The scanner uses YAML rule files in `src/copaw/security/skill_scanner/rules/signatures/`. You can customize the scan policy via a YAML policy file:
+The scanner uses YAML rule files in `src/sealclaw/security/skill_scanner/rules/signatures/`. You can customize the scan policy via a YAML policy file:
 
 ```python
-from copaw.security.skill_scanner import SkillScanner
-from copaw.security.skill_scanner.scan_policy import ScanPolicy
+from sealclaw.security.skill_scanner import SkillScanner
+from sealclaw.security.skill_scanner.scan_policy import ScanPolicy
 
 policy = ScanPolicy.from_yaml("my_org_policy.yaml")
 scanner = SkillScanner(policy=policy)
@@ -117,43 +117,43 @@ In `config.json`:
 
 ## Web Authentication
 
-CoPaw supports optional web login authentication to protect the Console from unauthorized access. Authentication is **disabled by default** and must be explicitly enabled via the `COPAW_AUTH_ENABLED` environment variable. When disabled, CoPaw behaves identically to the default configuration — no login page, no token checks.
+SealClaw supports optional web login authentication to protect the Console from unauthorized access. Authentication is **disabled by default** and must be explicitly enabled via the `SEALCLAW_AUTH_ENABLED` environment variable. When disabled, SealClaw behaves identically to the default configuration — no login page, no token checks.
 
 ### How it works
 
-1. Set `COPAW_AUTH_ENABLED=true` and start CoPaw.
+1. Set `SEALCLAW_AUTH_ENABLED=true` and start SealClaw.
 2. On first visit, the Console shows a **registration page** — create your admin account (username + password).
 3. After registering, subsequent visits show the **login page**.
 4. Only **one account** can be registered per deployment (single-user model, designed for personal use).
 5. After login, a signed token (valid for 7 days) is stored in the browser's localStorage. All API requests include this token automatically.
-6. Requests from **localhost** (`127.0.0.1` / `::1`) bypass authentication entirely, so CLI commands (`copaw app`, `copaw chat`, etc.) continue to work without a token.
+6. Requests from **localhost** (`127.0.0.1` / `::1`) bypass authentication entirely, so CLI commands (`sealclaw app`, `sealclaw chat`, etc.) continue to work without a token.
 
 ### Environment variables
 
 | Variable              | Description                          | Required                     |
 | --------------------- | ------------------------------------ | ---------------------------- |
-| `COPAW_AUTH_ENABLED`  | Set to `true` to enable auth         | Yes                          |
-| `COPAW_AUTH_USERNAME` | Pre-set admin username on first boot | Optional (auto-registration) |
-| `COPAW_AUTH_PASSWORD` | Pre-set admin password on first boot | Optional (auto-registration) |
+| `SEALCLAW_AUTH_ENABLED`  | Set to `true` to enable auth         | Yes                          |
+| `SEALCLAW_AUTH_USERNAME` | Pre-set admin username on first boot | Optional (auto-registration) |
+| `SEALCLAW_AUTH_PASSWORD` | Pre-set admin password on first boot | Optional (auto-registration) |
 
-- `COPAW_AUTH_ENABLED=true` is the only variable required to turn on authentication.
-- `COPAW_AUTH_USERNAME` and `COPAW_AUTH_PASSWORD` are optional. When both are set and no user has been registered yet, CoPaw automatically creates the admin account on startup — useful for Docker orchestration, Kubernetes, server management panels (1Panel, Portainer, CasaOS, etc.), and other automated deployments where interactive web registration is not practical.
+- `SEALCLAW_AUTH_ENABLED=true` is the only variable required to turn on authentication.
+- `SEALCLAW_AUTH_USERNAME` and `SEALCLAW_AUTH_PASSWORD` are optional. When both are set and no user has been registered yet, SealClaw automatically creates the admin account on startup — useful for Docker orchestration, Kubernetes, server management panels (1Panel, Portainer, CasaOS, etc.), and other automated deployments where interactive web registration is not practical.
 - If the auto-registration variables are not set, the first user registers through the web UI on first visit (the original behavior).
 
 ### Enable authentication
 
 #### Script install / pip install
 
-Set the environment variable before starting. Add `COPAW_AUTH_USERNAME` and `COPAW_AUTH_PASSWORD` if you want the admin account created automatically.
+Set the environment variable before starting. Add `SEALCLAW_AUTH_USERNAME` and `SEALCLAW_AUTH_PASSWORD` if you want the admin account created automatically.
 
 **Linux / macOS:**
 
 ```bash
-export COPAW_AUTH_ENABLED=true
+export SEALCLAW_AUTH_ENABLED=true
 # Optional: pre-set admin credentials for automated setup
-# export COPAW_AUTH_USERNAME=admin
-# export COPAW_AUTH_PASSWORD=mypassword
-copaw app
+# export SEALCLAW_AUTH_USERNAME=admin
+# export SEALCLAW_AUTH_PASSWORD=mypassword
+sealclaw app
 ```
 
 To make it permanent, add the `export` lines to your `~/.bashrc`, `~/.zshrc`, or equivalent.
@@ -161,21 +161,21 @@ To make it permanent, add the `export` lines to your `~/.bashrc`, `~/.zshrc`, or
 **Windows (CMD):**
 
 ```cmd
-set COPAW_AUTH_ENABLED=true
+set SEALCLAW_AUTH_ENABLED=true
 rem Optional: pre-set admin credentials for automated setup
-rem set COPAW_AUTH_USERNAME=admin
-rem set COPAW_AUTH_PASSWORD=mypassword
-copaw app
+rem set SEALCLAW_AUTH_USERNAME=admin
+rem set SEALCLAW_AUTH_PASSWORD=mypassword
+sealclaw app
 ```
 
 **Windows (PowerShell):**
 
 ```powershell
-$env:COPAW_AUTH_ENABLED = "true"
+$env:SEALCLAW_AUTH_ENABLED = "true"
 # Optional: pre-set admin credentials for automated setup
-# $env:COPAW_AUTH_USERNAME = "admin"
-# $env:COPAW_AUTH_PASSWORD = "mypassword"
-copaw app
+# $env:SEALCLAW_AUTH_USERNAME = "admin"
+# $env:SEALCLAW_AUTH_PASSWORD = "mypassword"
+sealclaw app
 ```
 
 #### Docker
@@ -183,32 +183,32 @@ copaw app
 Pass the environment variables with `-e`:
 
 ```bash
-docker run -e COPAW_AUTH_ENABLED=true \
-  -e COPAW_AUTH_USERNAME=admin \
-  -e COPAW_AUTH_PASSWORD=mypassword \
+docker run -e SEALCLAW_AUTH_ENABLED=true \
+  -e SEALCLAW_AUTH_USERNAME=admin \
+  -e SEALCLAW_AUTH_PASSWORD=mypassword \
   -p 127.0.0.1:8088:8088 \
-  -v copaw-data:/app/working \
-  -v copaw-secrets:/app/working.secret \
-  agentscope/copaw:latest
+  -v sealclaw-data:/app/working \
+  -v sealclaw-secrets:/app/working.secret \
+  agentscope/sealclaw:latest
 ```
 
-> Remove the `COPAW_AUTH_USERNAME` and `COPAW_AUTH_PASSWORD` lines if you prefer to register through the web UI on first visit.
+> Remove the `SEALCLAW_AUTH_USERNAME` and `SEALCLAW_AUTH_PASSWORD` lines if you prefer to register through the web UI on first visit.
 
 #### docker-compose.yml
 
 ```yaml
 services:
-  copaw:
-    image: agentscope/copaw:latest
+  sealclaw:
+    image: agentscope/sealclaw:latest
     ports:
       - "127.0.0.1:8088:8088"
     environment:
-      - COPAW_AUTH_ENABLED=true
-      - COPAW_AUTH_USERNAME=admin
-      - COPAW_AUTH_PASSWORD=mypassword
+      - SEALCLAW_AUTH_ENABLED=true
+      - SEALCLAW_AUTH_USERNAME=admin
+      - SEALCLAW_AUTH_PASSWORD=mypassword
     volumes:
-      - copaw-data:/app/working
-      - copaw-secrets:/app/working.secret
+      - sealclaw-data:/app/working
+      - sealclaw-secrets:/app/working.secret
 ```
 
 #### Environment file (.env)
@@ -216,24 +216,24 @@ services:
 You can also use a `.env` file:
 
 ```
-COPAW_AUTH_ENABLED=true
-COPAW_AUTH_USERNAME=admin
-COPAW_AUTH_PASSWORD=mypassword
+SEALCLAW_AUTH_ENABLED=true
+SEALCLAW_AUTH_USERNAME=admin
+SEALCLAW_AUTH_PASSWORD=mypassword
 ```
 
-Then pass it to Docker with `--env-file .env`, or source it in your shell before running `copaw app`.
+Then pass it to Docker with `--env-file .env`, or source it in your shell before running `sealclaw app`.
 
 ### Disable authentication
 
-Remove or unset the environment variable and restart CoPaw:
+Remove or unset the environment variable and restart SealClaw:
 
 ```bash
 # Linux / macOS
-unset COPAW_AUTH_ENABLED
-copaw app
+unset SEALCLAW_AUTH_ENABLED
+sealclaw app
 
 # Docker — simply remove the -e flag. The example below includes volumes for persistence.
-docker run -p 127.0.0.1:8088:8088 -v copaw-data:/app/working -v copaw-secrets:/app/working.secret agentscope/copaw:latest
+docker run -p 127.0.0.1:8088:8088 -v sealclaw-data:/app/working -v sealclaw-secrets:/app/working.secret agentscope/sealclaw:latest
 ```
 
 ### Password reset
@@ -241,7 +241,7 @@ docker run -p 127.0.0.1:8088:8088 -v copaw-data:/app/working -v copaw-secrets:/a
 If you forget your password, use the CLI:
 
 ```bash
-copaw auth reset-password
+sealclaw auth reset-password
 ```
 
 This command will:
@@ -253,10 +253,10 @@ This command will:
 For Docker deployments, run the command inside the container:
 
 ```bash
-docker exec -it <container_name> copaw auth reset-password
+docker exec -it <container_name> sealclaw auth reset-password
 ```
 
-> **Alternative**: You can also delete the `auth.json` file from `SECRET_DIR` (default `~/.copaw/.secret/`) and restart CoPaw. This removes the registered account entirely and allows you to re-register from scratch on the next visit.
+> **Alternative**: You can also delete the `auth.json` file from `SECRET_DIR` (default `~/.sealclaw/.secret/`) and restart SealClaw. This removes the registered account entirely and allows you to re-register from scratch on the next visit.
 
 ### Logout
 

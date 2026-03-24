@@ -12,14 +12,14 @@
 
 ## 工作目录是啥？
 
-CoPaw 所有配置和数据默认都在一个目录里，叫**工作目录**，默认是：
+SealClaw 所有配置和数据默认都在一个目录里，叫**工作目录**，默认是：
 
-- **`~/.copaw`**（即你当前用户下的 `.copaw` 文件夹）
+- **`~/.sealclaw`**（即你当前用户下的 `.sealclaw` 文件夹）
 
-从 **v0.1.0** 开始，CoPaw 支持**多智能体工作区**。运行 `copaw init` 后会自动创建这个目录，新的结构如下：
+从 **v0.1.0** 开始，SealClaw 支持**多智能体工作区**。运行 `sealclaw init` 后会自动创建这个目录，新的结构如下：
 
 ```
-~/.copaw/
+~/.sealclaw/
 ├── config.json              # 全局配置（提供商、环境变量）
 └── workspaces/
     ├── default/             # 默认智能体工作区
@@ -37,14 +37,14 @@ CoPaw 所有配置和数据默认都在一个目录里，叫**工作目录**，�
 
 ### 目录说明
 
-**全局目录（`~/.copaw/`）**
+**全局目录（`~/.sealclaw/`）**
 
 | 文件/目录     | 作用                                         |
 | ------------- | -------------------------------------------- |
 | `config.json` | 全局配置（模型提供商、环境变量、智能体列表） |
 | `workspaces/` | 所有智能体的工作区目录                       |
 
-**智能体工作区（`~/.copaw/workspaces/{agent_id}/`）**
+**智能体工作区（`~/.sealclaw/workspaces/{agent_id}/`）**
 
 | 文件/目录            | 作用                                         |
 | -------------------- | -------------------------------------------- |
@@ -59,7 +59,7 @@ CoPaw 所有配置和数据默认都在一个目录里，叫**工作目录**，�
 | `memory/`            | 记忆文件（自动管理）                         |
 
 > **提示：** `SOUL.md` 和 `AGENTS.md` 是 Agent 系统提示词的最低要求。如果它们不存在，Agent
-> 会退回到通用的 "You are a helpful assistant" 提示。运行 `copaw init` 时会根据你选择的
+> 会退回到通用的 "You are a helpful assistant" 提示。运行 `sealclaw init` 时会根据你选择的
 > 语言（`zh` / `en` / `ru`）自动复制这些文件。你也可以之后在控制台
 > （Agent → 运行配置）中切换语言。
 
@@ -69,32 +69,32 @@ CoPaw 所有配置和数据默认都在一个目录里，叫**工作目录**，�
 
 ## 用环境变量改路径（可选）
 
-如果你不想用 `~/.copaw`，可以通过环境变量改工作目录或某些文件的路径：
+如果你不想用 `~/.sealclaw`，可以通过环境变量改工作目录或某些文件的路径：
 
 | 变量                     | 默认值             | 说明                                                                                                                                            |
 | ------------------------ | ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| `COPAW_WORKING_DIR`      | `~/.copaw`         | 工作目录；config、心跳、jobs、chats、skills、memory 都在这下面                                                                                  |
-| `COPAW_SECRET_DIR`       | `~/.copaw.secret`  | 敏感数据目录（工作目录的同级目录）；存放 `providers.json`（模型配置、API Key）和 `envs.json`（环境变量）。Docker 中默认为 `/app/working.secret` |
-| `COPAW_CONFIG_FILE`      | `config.json`      | 配置文件名（相对工作目录）                                                                                                                      |
-| `COPAW_HEARTBEAT_FILE`   | `HEARTBEAT.md`     | 心跳问题文件名（相对工作目录）                                                                                                                  |
-| `COPAW_JOBS_FILE`        | `jobs.json`        | 定时任务文件名（相对工作目录）                                                                                                                  |
-| `COPAW_CHATS_FILE`       | `chats.json`       | 会话列表文件名（相对工作目录）                                                                                                                  |
-| `COPAW_TOKEN_USAGE_FILE` | `token_usage.json` | Token 消耗记录文件名（相对工作目录）                                                                                                            |
+| `SEALCLAW_WORKING_DIR`      | `~/.sealclaw`         | 工作目录；config、心跳、jobs、chats、skills、memory 都在这下面                                                                                  |
+| `SEALCLAW_SECRET_DIR`       | `~/.sealclaw.secret`  | 敏感数据目录（工作目录的同级目录）；存放 `providers.json`（模型配置、API Key）和 `envs.json`（环境变量）。Docker 中默认为 `/app/working.secret` |
+| `SEALCLAW_CONFIG_FILE`      | `config.json`      | 配置文件名（相对工作目录）                                                                                                                      |
+| `SEALCLAW_HEARTBEAT_FILE`   | `HEARTBEAT.md`     | 心跳问题文件名（相对工作目录）                                                                                                                  |
+| `SEALCLAW_JOBS_FILE`        | `jobs.json`        | 定时任务文件名（相对工作目录）                                                                                                                  |
+| `SEALCLAW_CHATS_FILE`       | `chats.json`       | 会话列表文件名（相对工作目录）                                                                                                                  |
+| `SEALCLAW_TOKEN_USAGE_FILE` | `token_usage.json` | Token 消耗记录文件名（相对工作目录）                                                                                                            |
 
-| `COPAW_LOG_LEVEL` | `info` | 日志级别（`debug`、`info`、`warning`、`error`、`critical`） |
-| `COPAW_MEMORY_COMPACT_THRESHOLD` | `100000` | 触发记忆压缩的字符阈值 |
-| `COPAW_MEMORY_COMPACT_KEEP_RECENT` | `3` | 压缩后保留的最近消息数 |
-| `COPAW_MEMORY_COMPACT_RATIO` | `0.7` | 触发压缩的阈值比例（相对于上下文窗口大小） |
-| `COPAW_CONSOLE_STATIC_DIR` | _（自动检测）_ | 控制台前端静态文件路径 |
+| `SEALCLAW_LOG_LEVEL` | `info` | 日志级别（`debug`、`info`、`warning`、`error`、`critical`） |
+| `SEALCLAW_MEMORY_COMPACT_THRESHOLD` | `100000` | 触发记忆压缩的字符阈值 |
+| `SEALCLAW_MEMORY_COMPACT_KEEP_RECENT` | `3` | 压缩后保留的最近消息数 |
+| `SEALCLAW_MEMORY_COMPACT_RATIO` | `0.7` | 触发压缩的阈值比例（相对于上下文窗口大小） |
+| `SEALCLAW_CONSOLE_STATIC_DIR` | _（自动检测）_ | 控制台前端静态文件路径 |
 
 例如在 Linux/macOS 里临时换工作目录：
 
 ```bash
-export COPAW_WORKING_DIR=/home/me/my_copaw
-copaw app
+export SEALCLAW_WORKING_DIR=/home/me/my_sealclaw
+sealclaw app
 ```
 
-这样 config、HEARTBEAT、jobs、memory 等都会在 `/home/me/my_copaw` 下读写。
+这样 config、HEARTBEAT、jobs、memory 等都会在 `/home/me/my_sealclaw` 下读写。
 
 ---
 
@@ -102,8 +102,8 @@ copaw app
 
 从 **v0.1.0** 开始，配置文件分为两层：
 
-1. **全局配置** - `~/.copaw/config.json`（提供商、环境变量、智能体列表）
-2. **智能体配置** - `~/.copaw/workspaces/{agent_id}/agent.json`（每个智能体的独立配置）
+1. **全局配置** - `~/.sealclaw/config.json`（提供商、环境变量、智能体列表）
+2. **智能体配置** - `~/.sealclaw/workspaces/{agent_id}/agent.json`（每个智能体的独立配置）
 
 ### 全局 config.json 示例
 
@@ -235,7 +235,7 @@ copaw app
 | `app_secret`         | string | `""`             | 飞书 App Secret          |
 | `encrypt_key`        | string | `""`             | 事件加密密钥（可选）     |
 | `verification_token` | string | `""`             | 事件验证令牌（可选）     |
-| `media_dir`          | string | `~/.copaw/media` | 接收到的媒体文件存放目录 |
+| `media_dir`          | string | `~/.sealclaw/media` | 接收到的媒体文件存放目录 |
 
 **`channels.qq`** — QQ 机器人
 
@@ -262,7 +262,7 @@ copaw app
 | `agents.defaults.heartbeat`          | object \| null | 见下方 | 心跳配置                                               |
 | `agents.running`                     | object         | 见下方 | Agent 运行时行为配置                                   |
 | `agents.language`                    | string         | `"zh"` | Agent 提示词 MD 文件的语言（`"zh"` / `"en"` / `"ru"`） |
-| `agents.installed_md_files_language` | string \| null | `null` | 记录当前已安装的 MD 文件语言；由 `copaw init` 自动管理 |
+| `agents.installed_md_files_language` | string \| null | `null` | 记录当前已安装的 MD 文件语言；由 `sealclaw init` 自动管理 |
 
 **`agents.running`** — Agent 运行时行为配置
 
@@ -311,10 +311,10 @@ copaw app
 
 | 字段   | 类型           | 默认值 | 说明                        |
 | ------ | -------------- | ------ | --------------------------- |
-| `host` | string \| null | `null` | 上次 `copaw app` 绑定的主机 |
-| `port` | int \| null    | `null` | 上次 `copaw app` 绑定的端口 |
+| `host` | string \| null | `null` | 上次 `sealclaw app` 绑定的主机 |
+| `port` | int \| null    | `null` | 上次 `sealclaw app` 绑定的端口 |
 
-每次运行 `copaw app` 时会自动保存。其他 CLI 子命令（如 `copaw cron`）会读取这个地址来发送请求。
+每次运行 `sealclaw app` 时会自动保存。其他 CLI 子命令（如 `sealclaw cron`）会读取这个地址来发送请求。
 
 ---
 
@@ -340,9 +340,9 @@ copaw app
 
 ## 模型提供商
 
-CoPaw 需要 LLM 提供商才能运行。有三种设置方式：
+SealClaw 需要 LLM 提供商才能运行。有三种设置方式：
 
-- **`copaw init`** — 交互式向导，最简单
+- **`sealclaw init`** — 交互式向导，最简单
 - **控制台 UI** — 在设置页面点选
 - **API** — `PUT /providers/{id}` 和 `PUT /providers/active_llm`
 
@@ -374,9 +374,9 @@ CoPaw 需要 LLM 提供商才能运行。有三种设置方式：
 | `provider_id` | 使用哪个提供商（如 `dashscope`） |
 | `model`       | 使用哪个模型（如 `qwen3-max`）   |
 
-> **提示：** 运行 `copaw init` 跟着提示走就行——它会列出每个提供商的可用模型让你直接选。
+> **提示：** 运行 `sealclaw init` 跟着提示走就行——它会列出每个提供商的可用模型让你直接选。
 >
-> **注意：** API Key 和 Base URL 的有效性需要用户自行保证。CoPaw 不会验证你填入的密钥是否正确或是否有余额，请确保所选提供商和模型可正常访问。
+> **注意：** API Key 和 Base URL 的有效性需要用户自行保证。SealClaw 不会验证你填入的密钥是否正确或是否有余额，请确保所选提供商和模型可正常访问。
 
 ---
 
@@ -384,13 +384,13 @@ CoPaw 需要 LLM 提供商才能运行。有三种设置方式：
 
 部分工具需要额外的 API Key（如网络搜索用的 `TAVILY_API_KEY`）。有三种管理方式：
 
-- **`copaw init`** — 初始化时会问 "Configure environment variables?"
+- **`sealclaw init`** — 初始化时会问 "Configure environment variables?"
 - **控制台 UI** — 在设置页面编辑
 - **API** — `GET/PUT/DELETE /envs`
 
 设置好的变量会在应用启动时自动加载，所有工具和子进程都可以通过 `os.environ` 读取。
 
-> **注意：** 环境变量的值（如第三方 API Key）的有效性需要用户自行保证。CoPaw 只负责存储和注入，不会校验其正确性。
+> **注意：** 环境变量的值（如第三方 API Key）的有效性需要用户自行保证。SealClaw 只负责存储和注入，不会校验其正确性。
 
 ---
 
@@ -400,31 +400,31 @@ CoPaw 需要 LLM 提供商才能运行。有三种设置方式：
 
 | 目录                          | 说明                                                           |
 | ----------------------------- | -------------------------------------------------------------- |
-| 内置（源码中）                | 随 CoPaw 一起发布——docx、pdf、pptx、xlsx、news、email、cron 等 |
-| `~/.copaw/customized_skills/` | 用户自己创建的技能                                             |
-| `~/.copaw/active_skills/`     | 当前激活的技能（从内置 + 自定义同步过来的）                    |
+| 内置（源码中）                | 随 SealClaw 一起发布——docx、pdf、pptx、xlsx、news、email、cron 等 |
+| `~/.sealclaw/customized_skills/` | 用户自己创建的技能                                             |
+| `~/.sealclaw/active_skills/`     | 当前激活的技能（从内置 + 自定义同步过来的）                    |
 
 每个技能是一个目录，里面有 `SKILL.md` 文件（YAML front matter 中需包含 `name` 和
 `description`），以及可选的 `references/` 和 `scripts/` 子目录。
 
 管理技能的方式：
 
-- `copaw init`（初始化时选择 all / none / custom）
-- `copaw skills config`（交互式开关）
+- `sealclaw init`（初始化时选择 all / none / custom）
+- `sealclaw skills config`（交互式开关）
 - API 接口（`/skills/...`）
 
 ---
 
 ## 记忆（Memory）
 
-CoPaw 拥有跨对话的持久记忆能力：自动压缩上下文，并将关键信息写入 Markdown 文件长期保存。详细说明请看 [记忆](./memory.zh.md)。
+SealClaw 拥有跨对话的持久记忆能力：自动压缩上下文，并将关键信息写入 Markdown 文件长期保存。详细说明请看 [记忆](./memory.zh.md)。
 
 记忆文件存储在两个位置：
 
 | 文件/目录                       | 说明                                       |
 | ------------------------------- | ------------------------------------------ |
-| `~/.copaw/MEMORY.md`            | 长期有效的关键信息（决策、偏好、持久事实） |
-| `~/.copaw/memory/YYYY-MM-DD.md` | 每日日志（日常笔记、运行上下文、自动摘要） |
+| `~/.sealclaw/MEMORY.md`            | 长期有效的关键信息（决策、偏好、持久事实） |
+| `~/.sealclaw/memory/YYYY-MM-DD.md` | 每日日志（日常笔记、运行上下文、自动摘要） |
 
 ### Embedding（向量嵌入）配置
 
@@ -444,11 +444,11 @@ CoPaw 拥有跨对话的持久记忆能力：自动压缩上下文，并将关�
 
 ## 小结
 
-- 默认一切都在 **`~/.copaw`**；想改就设 **`COPAW_WORKING_DIR`** 等环境变量。
+- 默认一切都在 **`~/.sealclaw`**；想改就设 **`SEALCLAW_WORKING_DIR`** 等环境变量。
 - 日常主要改 **config.json**（频道、心跳、语言）和 **HEARTBEAT.md**（心跳问什么）；定时
   任务用 CLI/API 管理即可。
 - Agent 的人设由工作目录中的 Markdown 文件定义：**SOUL.md** + **AGENTS.md**（必需）。
-- LLM 提供商通过 `copaw init` 或控制台 UI 配置。
+- LLM 提供商通过 `sealclaw init` 或控制台 UI 配置。
 - 频道配置的修改会**自动热加载**（每 2 秒检测一次），不需要重启。
 - 直接调 Agent 接口：**POST** `/agent/process`，JSON 请求体、SSE 流式；具体示例见
   [快速开始 — 验证安装](./quickstart#验证安装可选)。

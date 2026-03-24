@@ -4,20 +4,20 @@ from pathlib import Path
 
 import pytest
 
-from copaw.config.config import (
+from sealclaw.config.config import (
     AgentProfileConfig,
     load_agent_config,
     save_agent_config,
 )
-from copaw.providers.models import ModelSlotConfig
+from sealclaw.providers.models import ModelSlotConfig
 
 
 @pytest.fixture
 def mock_agent_workspace(tmp_path, monkeypatch):
     """Create a temporary agent workspace for testing."""
     import json
-    from copaw.config.utils import get_config_path
-    from copaw.config.config import Config, AgentsConfig, AgentProfileRef
+    from sealclaw.config.utils import get_config_path
+    from sealclaw.config.config import Config, AgentsConfig, AgentProfileRef
 
     # Setup workspace directory
     workspace_dir = tmp_path / "workspaces" / "test_agent"
@@ -25,7 +25,7 @@ def mock_agent_workspace(tmp_path, monkeypatch):
 
     # Patch config path FIRST before any config operations
     monkeypatch.setenv(
-        "COPAW_CONFIG_PATH",
+        "SEALCLAW_CONFIG_PATH",
         str(tmp_path / "config.json"),
     )
 
@@ -133,18 +133,18 @@ def test_different_agents_have_independent_models(tmp_path, monkeypatch):
     """Test that different agents can have different model configs."""
     # Patch config path
     monkeypatch.setenv(
-        "COPAW_CONFIG_PATH",
+        "SEALCLAW_CONFIG_PATH",
         str(tmp_path / "config.json"),
     )
 
     # Create two agents
     import json
-    from copaw.config.config import (
+    from sealclaw.config.config import (
         Config,
         AgentsConfig,
         AgentProfileRef,
     )
-    from copaw.config.utils import get_config_path
+    from sealclaw.config.utils import get_config_path
 
     agent1_dir = tmp_path / "workspaces" / "agent1"
     agent2_dir = tmp_path / "workspaces" / "agent2"

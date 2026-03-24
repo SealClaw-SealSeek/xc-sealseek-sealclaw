@@ -7,11 +7,11 @@ from types import SimpleNamespace
 
 import pytest
 
-import copaw.providers.provider_manager as provider_manager_module
-from copaw.providers.anthropic_provider import AnthropicProvider
-from copaw.providers.openai_provider import OpenAIProvider
-from copaw.providers.provider import DefaultProvider, ModelInfo
-from copaw.providers.provider_manager import ProviderManager
+import sealclaw.providers.provider_manager as provider_manager_module
+from sealclaw.providers.anthropic_provider import AnthropicProvider
+from sealclaw.providers.openai_provider import OpenAIProvider
+from sealclaw.providers.provider import DefaultProvider, ModelInfo
+from sealclaw.providers.provider_manager import ProviderManager
 
 
 LEGACY_PROVIDER = {
@@ -77,7 +77,7 @@ LEGACY_PROVIDER = {
 
 @pytest.fixture
 def isolated_secret_dir(monkeypatch, tmp_path):
-    secret_dir = tmp_path / ".copaw.secret"
+    secret_dir = tmp_path / ".sealclaw.secret"
     monkeypatch.setattr(provider_manager_module, "SECRET_DIR", secret_dir)
     return secret_dir
 

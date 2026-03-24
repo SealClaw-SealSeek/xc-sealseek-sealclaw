@@ -1,15 +1,15 @@
 version: '3.8'
 
 volumes:
-  copaw-data:
-    name: copaw-data
-  copaw-secrets:
-    name: copaw-secrets
+  sealclaw-data:
+    name: sealclaw-data
+  sealclaw-secrets:
+    name: sealclaw-secrets
 
 services:
-  copaw:
-    image: agentscope/copaw:latest
-    container_name: copaw
+  sealclaw:
+    image: agentscope/sealclaw:latest
+    container_name: sealclaw
     restart: always
     ports:
       - "127.0.0.1:8088:8088"
@@ -18,5 +18,5 @@ services:
     #   - COPAW_AUTH_USERNAME=admin
     #   - COPAW_AUTH_PASSWORD=yourpassword
     volumes:
-      - copaw-data:/app/working
-      - copaw-secrets:/app/working.secret
+      - sealclaw-data:/app/working
+      - sealclaw-secrets:/app/working.secret

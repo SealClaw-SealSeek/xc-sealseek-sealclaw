@@ -1,6 +1,6 @@
 # 多智能体工作区
 
-CoPaw 支持**多智能体工作区**，允许您在同一个 CoPaw 实例中运行多个独立的 AI 智能体，每个智能体拥有自己的配置、记忆、技能和对话历史。
+SealClaw 支持**多智能体工作区**，允许您在同一个 SealClaw 实例中运行多个独立的 AI 智能体，每个智能体拥有自己的配置、记忆、技能和对话历史。
 
 > 本功能在 **v0.1.0** 中引入。
 
@@ -8,7 +8,7 @@ CoPaw 支持**多智能体工作区**，允许您在同一个 CoPaw 实例中运
 
 ## 什么是多智能体？
 
-简单来说，**多智能体**就是让您可以在一个 CoPaw 中运行多个"分身"，每个分身：
+简单来说，**多智能体**就是让您可以在一个 SealClaw 中运行多个"分身"，每个分身：
 
 - 有自己的**性格和专长**（通过不同的人设文件配置）
 - 记住**各自的对话**（互不干扰）
@@ -33,7 +33,7 @@ CoPaw 支持**多智能体工作区**，允许您在同一个 CoPaw 实例中运
 
 ### 场景二：按平台分离
 
-您可能在多个平台使用 CoPaw：
+您可能在多个平台使用 SealClaw：
 
 - **钉钉** - 工作相关对话
 - **Discord** - 社区讨论
@@ -58,7 +58,7 @@ CoPaw 支持**多智能体工作区**，允许您在同一个 CoPaw 实例中运
 
 #### 1. 查看和切换智能体
 
-启动 CoPaw 后，在控制台**右上角**可以看到**智能体切换器**：
+启动 SealClaw 后，在控制台**右上角**可以看到**智能体切换器**：
 
 ```
 ┌───────────────────────────────────┐
@@ -194,7 +194,7 @@ CoPaw 支持**多智能体工作区**，允许您在同一个 CoPaw 实例中运
 
 在控制台的"设置 → 智能体管理"页面点击删除按钮。
 
-**注意**：删除后工作区目录会保留（防止误删数据），如需彻底清理，请手动删除 `~/.copaw/workspaces/{agent_id}` 目录。
+**注意**：删除后工作区目录会保留（防止误删数据），如需彻底清理，请手动删除 `~/.sealclaw/workspaces/{agent_id}` 目录。
 
 ### Q: 默认智能体可以删除吗？
 
@@ -219,7 +219,7 @@ CoPaw 支持**多智能体工作区**，允许您在同一个 CoPaw 实例中运
 
 ## 从单智能体升级
 
-如果您之前使用 CoPaw **v0.0.x**，升级到 **v0.1.0** 时会**自动迁移**：
+如果您之前使用 SealClaw **v0.0.x**，升级到 **v0.1.0** 时会**自动迁移**：
 
 1. **首次启动时自动迁移**
 
@@ -228,14 +228,14 @@ CoPaw 支持**多智能体工作区**，允许您在同一个 CoPaw 实例中运
 
 2. **验证迁移**
 
-   - 启动 CoPaw 后，在控制台查看智能体列表
+   - 启动 SealClaw 后，在控制台查看智能体列表
    - 应该能看到一个名为"默认智能体"的智能体
    - 您的旧对话和配置都应该还在
 
 3. **备份建议**
    升级前备份工作目录：
    ```bash
-   cp -r ~/.copaw ~/.copaw.backup
+   cp -r ~/.sealclaw ~/.sealclaw.backup
    ```
 
 ---
@@ -250,12 +250,12 @@ CoPaw 支持**多智能体工作区**，允许您在同一个 CoPaw 实例中运
 
 ```bash
 # 查看特定智能体的配置
-copaw channels list --agent-id abc123
-copaw cron list --agent-id abc123
-copaw skills list --agent-id abc123
+sealclaw channels list --agent-id abc123
+sealclaw cron list --agent-id abc123
+sealclaw skills list --agent-id abc123
 
 # 为特定智能体创建定时任务
-copaw cron create \
+sealclaw cron create \
   --agent-id abc123 \
   --type agent \
   --name "检查待办" \
@@ -268,18 +268,18 @@ copaw cron create \
 
 **支持 `--agent-id` 的命令**：
 
-- `copaw channels` - 频道管理
-- `copaw cron` - 定时任务
-- `copaw daemon` - 运行状态
-- `copaw chats` - 对话管理
-- `copaw skills` - 技能管理
+- `sealclaw channels` - 频道管理
+- `sealclaw cron` - 定时任务
+- `sealclaw daemon` - 运行状态
+- `sealclaw chats` - 对话管理
+- `sealclaw skills` - 技能管理
 
 **不支持 `--agent-id` 的命令**（全局操作）：
 
-- `copaw init` - 初始化
-- `copaw providers` - 模型提供商
-- `copaw models` - 模型配置
-- `copaw env` - 环境变量
+- `sealclaw init` - 初始化
+- `sealclaw providers` - 模型提供商
+- `sealclaw models` - 模型配置
+- `sealclaw env` - 环境变量
 
 ### REST API
 
@@ -326,7 +326,7 @@ curl -X POST http://localhost:7860/api/cron/jobs \
 #### 旧结构（v0.0.x）
 
 ```
-~/.copaw/
+~/.sealclaw/
 ├── config.json          # 包含所有配置
 ├── chats.json
 ├── jobs.json
@@ -337,7 +337,7 @@ curl -X POST http://localhost:7860/api/cron/jobs \
 #### 新结构（v0.1.0+）
 
 ```
-~/.copaw/
+~/.sealclaw/
 ├── config.json          # 全局配置（providers, agents.profiles）
 └── workspaces/
     ├── default/         # 默认智能体工作区
@@ -380,10 +380,10 @@ curl -X POST http://localhost:7860/api/cron/jobs \
 
 ```bash
 # 备份特定智能体
-cp -r ~/.copaw/workspaces/abc123 ~/backups/agent-abc123-$(date +%Y%m%d)
+cp -r ~/.sealclaw/workspaces/abc123 ~/backups/agent-abc123-$(date +%Y%m%d)
 
 # 备份所有智能体
-cp -r ~/.copaw/workspaces ~/backups/workspaces-$(date +%Y%m%d)
+cp -r ~/.sealclaw/workspaces ~/backups/workspaces-$(date +%Y%m%d)
 ```
 
 ---

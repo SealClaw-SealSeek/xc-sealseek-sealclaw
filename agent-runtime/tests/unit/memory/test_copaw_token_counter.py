@@ -12,11 +12,11 @@ from __future__ import annotations
 import asyncio
 import os
 from unittest.mock import MagicMock
-from copaw.agents.utils.copaw_token_counter import (
+from sealclaw.agents.utils.sealclaw_token_counter import (
     CopawTokenCounter,
-    get_copaw_token_counter,
+    get_sealclaw_token_counter,
 )
-import copaw.agents.utils.copaw_token_counter as token_counter_module
+import sealclaw.agents.utils.sealclaw_token_counter as token_counter_module
 
 
 def _create_mock_agent_config(
@@ -277,8 +277,8 @@ def test_cache_returns_same_instance_for_same_config() -> None:
     _reset_global_state()
 
     mock_config = _create_mock_agent_config()
-    counter1 = get_copaw_token_counter(mock_config)
-    counter2 = get_copaw_token_counter(mock_config)
+    counter1 = get_sealclaw_token_counter(mock_config)
+    counter2 = get_sealclaw_token_counter(mock_config)
     assert counter1 is counter2
     print("  PASSED: same config returns same instance")
 
@@ -295,8 +295,8 @@ def test_different_config_creates_new_instance() -> None:
         token_count_model="Qwen/Qwen2.5-7B-Instruct",
     )
 
-    counter1 = get_copaw_token_counter(mock_config1)
-    counter2 = get_copaw_token_counter(mock_config2)
+    counter1 = get_sealclaw_token_counter(mock_config1)
+    counter2 = get_sealclaw_token_counter(mock_config2)
     assert counter1 is not counter2
     print("  PASSED: different config creates new instance")
 

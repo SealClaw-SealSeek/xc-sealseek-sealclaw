@@ -37,14 +37,18 @@ export default defineConfig(({ mode }) => {
       port: 1420,
       strictPort: true,
     },
-    assetsInclude: ["**/*.svg"],
     optimizeDeps: {
-      include: [],
+      include: ["@agentscope-ai/design"],
+      esbuildOptions: {
+        loader: {
+          ".svg": "dataurl",
+        },
+      },
     },
     // build: {
     //   // Output to CoPaw's console directory,
     //   // so we don't need to copy files manually after build.
-    //   outDir: path.resolve(__dirname, "../src/copaw/console"),
+    //   outDir: path.resolve(__dirname, "../src/sealclaw/console"),
     //   emptyOutDir: true,
     // },
   };

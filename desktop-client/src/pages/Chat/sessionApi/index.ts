@@ -549,6 +549,22 @@ class SessionApi implements IAgentScopeRuntimeWebUISessionAPI {
   }
 
   async createSession(session: Partial<IAgentScopeRuntimeWebUISession>) {
+    // 防止重复创建：如果已存在未发送消息的空会话（本地时间戳 ID 且无 realId），
+    // 直接复用该会话，不再创建新的
+    const existingEmpty = this.sessionList.find((s) => {
+      const ext = s as ExtendedSession;
+      return (
+        isLocalTimestamp(s.id) &&
+        !ext.realId &&
+        (!s.messages || s.messages.length === 0)
+      );
+    });
+
+    if (existingEmpty) {
+      this.updateWindowVariables(existingEmpty as ExtendedSession);
+      return [...this.sessionList];
+    }
+
     session.id = Date.now().toString();
 
     const extended: ExtendedSession = {
