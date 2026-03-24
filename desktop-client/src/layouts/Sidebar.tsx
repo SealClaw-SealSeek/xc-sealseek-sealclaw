@@ -26,6 +26,7 @@ import {
   Mic,
   Bot,
   LogOut,
+  RefreshCw,
 } from "lucide-react";
 import api from "../api";
 import { clearAuthToken } from "../api/config";
@@ -33,6 +34,7 @@ import { authApi } from "../api/modules/auth";
 import { BRAND_LOGO_URL, BRAND_NAME } from "../constants/brand";
 import styles from "./index.module.less";
 import { useTheme } from "../contexts/ThemeContext";
+import { useUpdateContext } from "../contexts/UpdateContext";
 import { DEFAULT_OPEN_KEYS, KEY_TO_PATH } from "./constants";
 
 // ── Layout ────────────────────────────────────────────────────────────────
@@ -51,6 +53,7 @@ export default function Sidebar({ selectedKey }: SidebarProps) {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { isDark } = useTheme();
+  const { checking, checkForUpdate } = useUpdateContext();
   const [collapsed, setCollapsed] = useState(false);
   const [openKeys, setOpenKeys] = useState<string[]>(DEFAULT_OPEN_KEYS);
   const [version, setVersion] = useState<string>("");
@@ -184,6 +187,15 @@ export default function Sidebar({ selectedKey }: SidebarProps) {
             />
             <span className={styles.brandName}>{BRAND_NAME}</span>
             {version && <span className={styles.versionBadge}>v{version}</span>}
+            <Button
+              type="text"
+              size="small"
+              icon={<RefreshCw size={14} className={checking ? "spin-animation" : ""} />}
+              loading={checking}
+              onClick={() => checkForUpdate()}
+              title={t("update.checkUpdate")}
+              style={{ marginLeft: 4, padding: "2px 4px", height: "auto" }}
+            />
           </div>
         )}
         <Button

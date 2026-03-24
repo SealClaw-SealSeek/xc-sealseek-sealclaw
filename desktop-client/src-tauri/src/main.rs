@@ -2,6 +2,7 @@
 
 mod commands;
 mod runtime;
+mod updater;
 
 use tauri::Manager;
 
@@ -20,13 +21,23 @@ fn main() {
             runtime::get_runtime_status,
             runtime::start_runtime,
             runtime::stop_runtime,
+            updater::check_gitee_update,
         ])
-        .setup(|app| {
+        .setup(|_app| {
             #[cfg(debug_assertions)]
             {
-                let main_window = app.get_webview_window("main").unwrap();
+                let main_window = _app.get_webview_window("main").unwrap();
                 main_window.open_devtools();
             }
+
+            // 应用启动时自动启动 Python 后端
+            tauri::async_runtime::spawn(async {
+                match runtime::start_runtime().await {
+                    Ok(msg) => eprintln!("[SealClaw] {}", msg),
+                    Err(e) => eprintln!("[SealClaw] 自动启动 Python 后端失败: {}", e),
+                }
+            });
+
             Ok(())
         })
         .on_window_event(|_window, event| {

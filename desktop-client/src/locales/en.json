@@ -72,14 +72,14 @@
     "providerTypeLocalWhisperDesc": "Run transcription locally using the openai-whisper Python library. Requires both ffmpeg and openai-whisper to be installed.",
     "localWhisperReady": "Local Whisper is ready. Both ffmpeg and openai-whisper are installed.",
     "localWhisperMissing": "Local Whisper is not ready. Missing dependencies must be installed.",
-    "localWhisperMissingDesc": "ffmpeg: {{ffmpeg}} | openai-whisper: {{whisper}}. Install missing dependencies: ffmpeg (system package) and openai-whisper (uv pip install openai-whisper, or install CoPaw with the [whisper] extra).",
+    "localWhisperMissingDesc": "ffmpeg: {{ffmpeg}} | openai-whisper: {{whisper}}. Install missing dependencies: ffmpeg (system package) and openai-whisper (uv pip install openai-whisper, or install SealClaw with the [whisper] extra).",
     "providerLabel": "Whisper API Provider",
     "providerDescription": "Select which provider to use for audio transcription via the Whisper API. Only providers with a Whisper-compatible endpoint are shown.",
     "providerPlaceholder": "Select a provider...",
     "noProvidersWarning": "No transcription-capable providers found. Configure an OpenAI provider to enable voice transcription.",
     "transcriptionInfoTitle": "How transcription works",
     "transcriptionInfoDesc": "Whisper API transcription uses an OpenAI-compatible /v1/audio/transcriptions endpoint. This requires a configured provider with a Whisper-compatible endpoint — for example, an OpenAI provider. Select a specific provider above to enable transcription.",
-    "transcriptionInfoDescLocal": "Local Whisper transcription runs the openai-whisper library directly on your machine. It requires both ffmpeg (for audio decoding) and the openai-whisper Python package to be installed. No API key or network connection is needed. Install with: uv pip install 'copaw[whisper]'."
+    "transcriptionInfoDescLocal": "Local Whisper transcription runs the openai-whisper library directly on your machine. It requires both ffmpeg (for audio decoding) and the openai-whisper Python package to be installed. No API key or network connection is needed. Install with: uv pip install 'sealclaw[whisper]'."
   },
   "workspace": {
     "title": "WorkSpace",
@@ -137,7 +137,7 @@
     "nameRequired": "Please enter agent name",
     "namePlaceholder": "e.g.: My Agent",
     "descriptionPlaceholder": "Briefly describe this agent's purpose...",
-    "workspaceHelp": "Leave empty to auto-generate in ~/.copaw/workspaces/<id>",
+    "workspaceHelp": "Leave empty to auto-generate in ~/.sealclaw/workspaces/<id>",
     "defaultNotEditable": "Default agent cannot be edited",
     "defaultNotDeletable": "Default agent cannot be deleted"
   },
@@ -823,11 +823,11 @@
   },
   "login": {
     "title": "Login to SealClaw",
-    "registerTitle": "Create Account",
+    "registerTitle": "Register",
     "firstUserHint": "Create your admin account to get started",
-    "usernamePlaceholder": "Username",
+    "usernamePlaceholder": "Username / Phone",
     "passwordPlaceholder": "Password",
-    "usernameRequired": "Please enter your username",
+    "usernameRequired": "Please enter your username or phone",
     "passwordRequired": "Please enter your password",
     "submit": "Login",
     "register": "Register",
@@ -838,6 +838,30 @@
     "logout": "Logout",
     "logoutSuccess": "Logged out successfully",
     "sessionExpired": "Session expired, please login again",
-    "unauthorized": "Unauthorized, please login"
+    "unauthorized": "Unauthorized, please login",
+    "phonePlaceholder": "Phone number",
+    "phoneRequired": "Please enter your phone number",
+    "phoneInvalid": "Invalid phone number",
+    "codePlaceholder": "Verification code",
+    "codeRequired": "Please enter the verification code",
+    "sendCode": "Send Code",
+    "codeSent": "Code sent",
+    "codeSendFailed": "Failed to send code",
+    "codeCountdown": "Retry in {{seconds}}s",
+    "switchToRegister": "No account? Register",
+    "switchToLogin": "Have an account? Login",
+    "passwordLengthHint": "Password must be 6-32 characters"
+  },
+  "update": {
+    "checking": "Checking for updates...",
+    "available": "Update Available",
+    "availableDesc": "SealClaw {{version}} is available. Would you like to update now?",
+    "downloading": "Downloading update...",
+    "installing": "Installing update...",
+    "upToDate": "You're up to date",
+    "failed": "Update failed",
+    "updateNow": "Update Now",
+    "later": "Later",
+    "checkUpdate": "Check for updates"
   }
 }
