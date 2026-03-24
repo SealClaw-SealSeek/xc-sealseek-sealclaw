@@ -1,4 +1,3 @@
 # 使用 conda-forge 避免 defaults channel 的 TOS 限制
 channels:
   - conda-forge
-  - defaults
