@@ -154,6 +154,7 @@ def main() -> int:
                 "-m",
                 "pip",
                 "install",
+                "-v",
                 f"sealclaw[{args.extras}] @ {wheel_uri}"
                 if args.extras
                 else f"sealclaw @ {wheel_uri}",
