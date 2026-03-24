@@ -1,3 +1,4 @@
-# Explicit channels so conda does not warn about implicit 'defaults'
+# 使用 conda-forge 避免 defaults channel 的 TOS 限制
 channels:
+  - conda-forge
   - defaults
