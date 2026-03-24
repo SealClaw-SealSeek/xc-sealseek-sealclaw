@@ -1,19 +1,19 @@
 #!/usr/bin/env bash
-# One-click build: console -> conda-pack -> CoPaw.app. Run from repo root.
-# Requires: conda, node/npm (for console). Optional: icon.icns in assets/.
+# One-click build: wheel -> conda-pack -> Tauri binary -> SealClaw.app
+# Requires: conda, node/npm, Rust/cargo. Optional: icon.icns in assets/.
 
 set -e
 REPO_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 cd "$REPO_ROOT"
 PACK_DIR="$(cd "$(dirname "$0")" && pwd)"
 DIST="${DIST:-dist}"
-ARCHIVE="${DIST}/copaw-env.tar.gz"
-APP_NAME="CoPaw"
+ARCHIVE="${DIST}/sealclaw-env.tar.gz"
+APP_NAME="SealClaw"
 APP_DIR="${DIST}/${APP_NAME}.app"
 
 echo "== Building wheel (includes console frontend) =="
 # Skip wheel_build if dist already has a wheel for current version
-VERSION_FILE="${REPO_ROOT}/src/copaw/__version__.py"
+VERSION_FILE="${REPO_ROOT}/src/sealclaw/__version__.py"
 CURRENT_VERSION=""
 if [[ -f "${VERSION_FILE}" ]]; then
   CURRENT_VERSION="$(
@@ -23,12 +23,12 @@ if [[ -f "${VERSION_FILE}" ]]; then
 fi
 if [[ -n "${CURRENT_VERSION}" ]]; then
   shopt -s nullglob
-  whls=("${REPO_ROOT}/dist/copaw-${CURRENT_VERSION}-"*.whl)
+  whls=("${REPO_ROOT}/dist/sealclaw-${CURRENT_VERSION}-"*.whl)
   if [[ ${#whls[@]} -gt 0 ]]; then
     echo "dist/ already has wheel for version ${CURRENT_VERSION}, skipping."
   else
     # Clean up old wheels to avoid confusion
-    old_whls=("${REPO_ROOT}/dist/copaw-"*.whl)
+    old_whls=("${REPO_ROOT}/dist/sealclaw-"*.whl)
     if [[ ${#old_whls[@]} -gt 0 ]]; then
       echo "Removing old wheel files: ${old_whls[*]}"
       rm -f "${old_whls[@]}"
@@ -40,7 +40,7 @@ else
 fi
 
 echo "== Building conda-packed env =="
-python "${PACK_DIR}/build_common.py" --output "$ARCHIVE" --format tar.gz
+python "${PACK_DIR}/build_common.py" --output "$ARCHIVE" --format tar.gz --extras "ollama"
 
 echo "== Building .app bundle =="
 rm -rf "$APP_DIR"
@@ -56,78 +56,19 @@ if [[ -x "${APP_DIR}/Contents/Resources/env/bin/conda-unpack" ]]; then
   (cd "${APP_DIR}/Contents/Resources/env" && ./bin/conda-unpack)
 fi
 
-# Launcher: force packed env; when no TTY log to ~/.copaw/desktop.log (no exec so we see errors)
-cat > "${APP_DIR}/Contents/MacOS/${APP_NAME}" << 'LAUNCHER'
-#!/usr/bin/env bash
-ENV_DIR="$(cd "$(dirname "$0")/../Resources/env" && pwd)"
-LOG="$HOME/.copaw/desktop.log"
-unset PYTHONPATH
-export PYTHONHOME="$ENV_DIR"
-export COPAW_DESKTOP_APP=1
+# 编译 Tauri 二进制（custom-protocol 会将前端编译进二进制）
+DESKTOP_CLIENT_DIR="${REPO_ROOT}/../desktop-client"
+echo "== Building Tauri binary =="
+(cd "$DESKTOP_CLIENT_DIR" && npm install && npm run build)
+(cd "$DESKTOP_CLIENT_DIR/src-tauri" && cargo build --release)
 
-# Preserve system PATH for accessing system commands (e.g. imsg, brew)
-# Prepend packaged env/bin so packaged Python takes precedence
-export PATH="$ENV_DIR/bin:$PATH"
-
-# Set SSL certificate paths for packaged environment
-# Query certifi path from the packaged Python interpreter
-if [ -x "$ENV_DIR/bin/python" ]; then
-  CERT_FILE=$("$ENV_DIR/bin/python" -c \
-    "import certifi; print(certifi.where())" 2>/dev/null)
-  if [ -n "$CERT_FILE" ] && [ -f "$CERT_FILE" ]; then
-    export SSL_CERT_FILE="$CERT_FILE"
-    export REQUESTS_CA_BUNDLE="$CERT_FILE"
-    export CURL_CA_BUNDLE="$CERT_FILE"
-  fi
+# 将 Tauri 二进制复制到 .app/Contents/MacOS/（替换 bash 脚本启动器）
+TAURI_BIN="${DESKTOP_CLIENT_DIR}/src-tauri/target/release/sealclaw-desktop"
+if [[ ! -f "$TAURI_BIN" ]]; then
+  echo "ERROR: Tauri binary not found at $TAURI_BIN"
+  exit 1
 fi
-
-cd "$HOME" || true
-
-# Log level: env var COPAW_LOG_LEVEL or default to "info"
-LOG_LEVEL="${COPAW_LOG_LEVEL:-info}"
-
-if [ ! -t 2 ]; then
-  mkdir -p "$HOME/.copaw"
-  { echo "=== $(date) CoPaw starting ==="
-    echo "ENV_DIR=$ENV_DIR"
-    echo "Python: $ENV_DIR/bin/python (exists=$([ -x "$ENV_DIR/bin/python" ] && echo yes || echo no))"
-    echo "PATH=$PATH"
-    echo "LOG_LEVEL=$LOG_LEVEL"
-    echo "SSL_CERT_FILE=${SSL_CERT_FILE:-not set}"
-    if [ -n "$SSL_CERT_FILE" ] && [ -f "$SSL_CERT_FILE" ]; then
-      echo "SSL certificate file found at $SSL_CERT_FILE"
-    elif [ -n "$SSL_CERT_FILE" ]; then
-      echo "WARNING: SSL_CERT_FILE set but file does not exist: $SSL_CERT_FILE"
-    else
-      echo "WARNING: SSL_CERT_FILE not set, SSL connections may fail"
-    fi
-  } >> "$LOG"
-  exec 2>> "$LOG"
-  exec 1>> "$LOG"
-  if [ ! -x "$ENV_DIR/bin/python" ]; then
-    echo "ERROR: python not executable at $ENV_DIR/bin/python"
-    exit 1
-  fi
-  if [ ! -f "$HOME/.copaw/config.json" ]; then
-    "$ENV_DIR/bin/python" -u -m copaw init --defaults --accept-security
-  fi
-  echo "Launching python with log-level=$LOG_LEVEL..."
-  "$ENV_DIR/bin/python" -u -m copaw desktop --log-level "$LOG_LEVEL"
-  EXIT=$?
-  if [ $EXIT -ge 128 ]; then
-    SIG=$((EXIT - 128))
-    echo "Exit code: $EXIT (killed by signal $SIG, e.g. 9=SIGKILL 15=SIGTERM)"
-  else
-    echo "Exit code: $EXIT"
-  fi
-  echo "--- Full log: $LOG (scroll up for Python traceback if app exited early) ---"
-  exit $EXIT
-fi
-if [ ! -f "$HOME/.copaw/config.json" ]; then
-  "$ENV_DIR/bin/python" -u -m copaw init --defaults --accept-security
-fi
-exec "$ENV_DIR/bin/python" -u -m copaw desktop --log-level "$LOG_LEVEL"
-LAUNCHER
+cp "$TAURI_BIN" "${APP_DIR}/Contents/MacOS/${APP_NAME}"
 chmod +x "${APP_DIR}/Contents/MacOS/${APP_NAME}"
 
 # Icon: use pre-generated icon.icns
@@ -144,7 +85,7 @@ VERSION="${CURRENT_VERSION}"
 if [[ -z "${VERSION}" ]]; then
   # Fallback: try to get version from packed env metadata
   VERSION="$("${APP_DIR}/Contents/Resources/env/bin/python" -c \
-    "from importlib.metadata import version; print(version('copaw'))" 2>/dev/null \
+    "from importlib.metadata import version; print(version('sealclaw'))" 2>/dev/null \
     || echo "0.0.0")"
   echo "Using version from packed env metadata: ${VERSION}"
 else
@@ -163,13 +104,13 @@ cat > "${APP_DIR}/Contents/Info.plist" << INFOPLIST
 <plist version="1.0">
 <dict>
   <key>CFBundleExecutable</key><string>${APP_NAME}</string>
-  <key>CFBundleIdentifier</key><string>com.copaw.desktop</string>
+  <key>CFBundleIdentifier</key><string>com.sealclaw.desktop</string>
   <key>CFBundleName</key><string>${APP_NAME}</string>
   <key>CFBundleVersion</key><string>${VERSION}</string>
   <key>CFBundleShortVersionString</key><string>${VERSION}</string>
   ${ICON_PLIST}<key>NSHighResolutionCapable</key><true/>
   <key>LSMinimumSystemVersion</key><string>14.0</string>
-  <key>NSDesktopFolderUsageDescription</key><string>CoPaw may access files in your Desktop folder if you use file-related features. You can choose Don'\''t Allow; the app will still run with limited file access.</string>
+  <key>NSDesktopFolderUsageDescription</key><string>SealClaw may access files in your Desktop folder if you use file-related features. You can choose Don'\''t Allow; the app will still run with limited file access.</string>
 </dict>
 </plist>
 INFOPLIST
@@ -177,7 +118,7 @@ INFOPLIST
 echo "== Built ${APP_DIR} =="
 # Optional: create zip for distribution (set CREATE_ZIP=1)
 if [[ -n "${CREATE_ZIP}" ]]; then
-  ZIP_NAME="${DIST}/CoPaw-${VERSION}-macOS.zip"
+  ZIP_NAME="${DIST}/SealClaw-${VERSION}-macOS.zip"
   ditto -c -k --sequesterRsrc --keepParent "${APP_DIR}" "${ZIP_NAME}"
   echo "== Created ${ZIP_NAME} =="
 fi

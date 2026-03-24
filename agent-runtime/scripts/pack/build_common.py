@@ -15,7 +15,7 @@ import sys
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-ENV_PREFIX = "copaw_pack_"
+ENV_PREFIX = "sealclaw_pack_"
 
 # Packages affected by conda-unpack bug on Windows (conda-pack Issue #154)
 # conda-unpack modifies Python source files to replace path prefixes, but uses
@@ -51,7 +51,7 @@ def _pick_wheel(wheel_arg: str | None) -> Path:
         return wheel_path
 
     wheels = sorted(
-        (REPO_ROOT / "dist").glob("copaw-*.whl"),
+        (REPO_ROOT / "dist").glob("sealclaw-*.whl"),
         key=lambda p: p.stat().st_mtime,
         reverse=True,
     )
@@ -89,7 +89,15 @@ def main() -> int:
         default=None,
         help=(
             "Wheel path to install. If omitted, pick the newest "
-            "dist/copaw-*.whl."
+            "dist/sealclaw-*.whl."
+        ),
+    )
+    parser.add_argument(
+        "--extras",
+        default="full",
+        help=(
+            "pip extras to install, e.g. 'full', 'ollama', or '' for core only. "
+            "Desktop builds should use 'ollama' to avoid bundling torch/mlx/whisper."
         ),
     )
     parser.add_argument(
@@ -146,7 +154,9 @@ def main() -> int:
                 "-m",
                 "pip",
                 "install",
-                f"copaw[full] @ {wheel_uri}",
+                f"sealclaw[{args.extras}] @ {wheel_uri}"
+                if args.extras
+                else f"sealclaw @ {wheel_uri}",
             ],
         )
         print("Verifying certifi is installed (required for SSL)...")
