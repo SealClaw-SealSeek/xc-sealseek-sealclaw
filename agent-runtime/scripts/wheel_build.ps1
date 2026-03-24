@@ -1,4 +1,4 @@
-# Build a full wheel package including the latest console frontend.
+# Build a wheel package. Optionally includes console frontend if console/ exists.
 # Run from repo root: pwsh -File scripts/wheel_build.ps1
 
 $ErrorActionPreference = "Stop"
@@ -8,25 +8,33 @@ Set-Location $RepoRoot
 $ConsoleDir = Join-Path $RepoRoot "console"
 $ConsoleDest = Join-Path $RepoRoot "src\sealclaw\console"
 
-Write-Host "[wheel_build] Building console frontend..."
-Push-Location $ConsoleDir
-try {
-  npm ci
-  if ($LASTEXITCODE -ne 0) { throw "npm ci failed with exit code $LASTEXITCODE" }
-  npm run build
-  if ($LASTEXITCODE -ne 0) { throw "npm run build failed with exit code $LASTEXITCODE" }
-} finally {
-  Pop-Location
-}
+# Tauri 方案下前端由二进制提供，console/ 目录可能不存在
+if (Test-Path $ConsoleDir) {
+  Write-Host "[wheel_build] Building console frontend..."
+  Push-Location $ConsoleDir
+  try {
+    npm ci
+    if ($LASTEXITCODE -ne 0) { throw "npm ci failed with exit code $LASTEXITCODE" }
+    npm run build
+    if ($LASTEXITCODE -ne 0) { throw "npm run build failed with exit code $LASTEXITCODE" }
+  } finally {
+    Pop-Location
+  }
 
-Write-Host "[wheel_build] Copying console/dist/* -> src/sealclaw/console/..."
-if (Test-Path $ConsoleDest) {
-  Remove-Item -Path (Join-Path $ConsoleDest "*") -Recurse -Force -ErrorAction SilentlyContinue
+  Write-Host "[wheel_build] Copying console/dist/* -> src/sealclaw/console/..."
+  if (Test-Path $ConsoleDest) {
+    Remove-Item -Path (Join-Path $ConsoleDest "*") -Recurse -Force -ErrorAction SilentlyContinue
+  } else {
+    New-Item -ItemType Directory -Force -Path $ConsoleDest | Out-Null
+  }
+  $ConsoleDist = Join-Path $ConsoleDir "dist"
+  Copy-Item -Path (Join-Path $ConsoleDist "*") -Destination $ConsoleDest -Recurse -Force
 } else {
-  New-Item -ItemType Directory -Force -Path $ConsoleDest | Out-Null
+  Write-Host "[wheel_build] console/ not found, skipping frontend build (Tauri mode)"
+  if (-not (Test-Path $ConsoleDest)) {
+    New-Item -ItemType Directory -Force -Path $ConsoleDest | Out-Null
+  }
 }
-$ConsoleDist = Join-Path $ConsoleDir "dist"
-Copy-Item -Path (Join-Path $ConsoleDist "*") -Destination $ConsoleDest -Recurse -Force
 
 Write-Host "[wheel_build] Building wheel + sdist..."
 python -m pip install --quiet build
