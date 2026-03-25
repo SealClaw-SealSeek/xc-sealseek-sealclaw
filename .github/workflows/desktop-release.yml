@@ -78,7 +78,7 @@ jobs:
           conda run -n sealclaw-build bash -c 'CREATE_ZIP=1 ./scripts/pack/build_macos.sh'
 
       - name: Sign macOS artifact with Tauri signer
-        if: env.TAURI_SIGNING_PRIVATE_KEY != ''
+        if: startsWith(github.ref, 'refs/tags/v') && env.TAURI_SIGNING_PRIVATE_KEY != ''
         run: |
           set -euo pipefail
           shopt -s nullglob
@@ -184,7 +184,7 @@ jobs:
         run: conda run -n sealclaw-build pwsh -File ./scripts/pack/build_win.ps1
 
       - name: Sign Windows artifact with Tauri signer
-        if: env.TAURI_SIGNING_PRIVATE_KEY != ''
+        if: startsWith(github.ref, 'refs/tags/v') && env.TAURI_SIGNING_PRIVATE_KEY != ''
         shell: pwsh
         run: |
           $tauriCli = Resolve-Path ../desktop-client/node_modules/.bin/tauri.cmd -ErrorAction Stop
