@@ -82,6 +82,11 @@ jobs:
         run: |
           set -euo pipefail
           shopt -s nullglob
+          TAURI_CLI="../desktop-client/node_modules/.bin/tauri"
+          if [ ! -x "$TAURI_CLI" ]; then
+            echo "::error::Tauri CLI not found at $TAURI_CLI"
+            exit 1
+          fi
           artifacts=(dist/SealClaw-*.zip)
           if [ ${#artifacts[@]} -eq 0 ]; then
             echo "::error::No macOS zip artifact found to sign"
@@ -89,7 +94,7 @@ jobs:
           fi
           for f in "${artifacts[@]}"; do
             echo "Signing $f..."
-            npx --yes @tauri-apps/cli signer sign --private-key "$TAURI_SIGNING_PRIVATE_KEY" --password "$TAURI_SIGNING_PRIVATE_KEY_PASSWORD" "$f"
+            "$TAURI_CLI" signer sign --private-key "$TAURI_SIGNING_PRIVATE_KEY" --password "$TAURI_SIGNING_PRIVATE_KEY_PASSWORD" "$f"
             echo " -> $f.sig created"
           done
 
@@ -182,10 +187,11 @@ jobs:
         if: env.TAURI_SIGNING_PRIVATE_KEY != ''
         shell: pwsh
         run: |
+          $tauriCli = Resolve-Path ../desktop-client/node_modules/.bin/tauri.cmd -ErrorAction Stop
           $artifacts = Get-ChildItem dist/SealClaw-Setup-*.exe -ErrorAction Stop
           foreach ($artifact in $artifacts) {
             Write-Host "Signing $artifact..."
-            npx --yes @tauri-apps/cli signer sign --private-key $env:TAURI_SIGNING_PRIVATE_KEY --password $env:TAURI_SIGNING_PRIVATE_KEY_PASSWORD $artifact.FullName
+            & $tauriCli signer sign --private-key $env:TAURI_SIGNING_PRIVATE_KEY --password $env:TAURI_SIGNING_PRIVATE_KEY_PASSWORD $artifact.FullName
             Write-Host " -> $($artifact.FullName).sig created"
           }
 
