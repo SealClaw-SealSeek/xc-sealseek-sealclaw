@@ -131,6 +131,11 @@ jobs:
         run: npm ci
         working-directory: .
 
+      - name: Install rollup Windows native module
+        shell: pwsh
+        working-directory: desktop-client
+        run: npm install @rollup/rollup-win32-x64-msvc
+
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@stable
 
