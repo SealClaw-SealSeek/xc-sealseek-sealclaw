@@ -1,4 +1,3 @@
-use semver::Version;
 use serde::{Deserialize, Serialize};
 use tauri::AppHandle;
 
@@ -100,10 +99,14 @@ pub async fn check_gitee_update(app: AppHandle) -> Result<UpdateInfo, String> {
 
 /// 简单的语义化版本比较：latest > current 时返回 true
 fn is_newer(latest: &str, current: &str) -> bool {
-    match (Version::parse(latest), Version::parse(current)) {
-        (Ok(latest_version), Ok(current_version)) => latest_version > current_version,
-        _ => false,
-    }
+    let parse = |v: &str| -> Vec<u64> {
+        v.split('.')
+            .filter_map(|s| s.parse().ok())
+            .collect()
+    };
+    let l = parse(latest);
+    let c = parse(current);
+    l > c
 }
 
 /// 根据编译目标平台返回安装包文件名中的关键字

@@ -64,12 +64,6 @@ if (-not (Test-Path $Archive)) {
   throw "Archive not created: $Archive"
 }
 
-Write-Host "== Syncing desktop version metadata =="
-$DesktopVersion = (& python (Join-Path $RepoRoot "scripts\sync_desktop_version.py") --sync --field desktop).Trim()
-if (-not $DesktopVersion) {
-  throw "Failed to resolve desktop version from sync_desktop_version.py"
-}
-
 Write-Host "== Unpacking env =="
 if (Test-Path $Unpacked) { Remove-Item -Recurse -Force $Unpacked }
 Expand-Archive -Path $Archive -DestinationPath $Unpacked -Force
@@ -162,6 +156,10 @@ if (Test-Path $pythonExe) {
 $DesktopClientDir = Join-Path (Split-Path $RepoRoot -Parent) "desktop-client"
 Write-Host "== Building Tauri binary =="
 Push-Location $DesktopClientDir
+& npm install
+if ($LASTEXITCODE -ne 0) { throw "npm install failed" }
+& npm run build
+if ($LASTEXITCODE -ne 0) { throw "npm run build failed" }
 Push-Location (Join-Path $DesktopClientDir "src-tauri")
 & cargo build --release
 if ($LASTEXITCODE -ne 0) { throw "cargo build failed" }
@@ -197,24 +195,6 @@ if (Test-Path $IconSrc) {
   Write-Host "[build_win] WARN: icon.ico not found at $IconSrc"
 }
 
-# Remove test and benchmark assets that are not needed at runtime and can exceed
-# Windows/NSIS path handling limits during recursive packaging.
-$PrunePaths = @(
-  "Lib\site-packages\litellm\proxy\guardrails\guardrail_hooks\litellm_content_filter\guardrail_benchmarks",
-  "Lib\site-packages\win32\test",
-  "Lib\site-packages\docker\tests",
-  "Lib\site-packages\pip\_vendor\distlib\tests"
-)
-
-Write-Host "== Pruning non-runtime files before NSIS packaging =="
-foreach ($relativePath in $PrunePaths) {
-  $fullPath = Join-Path $EnvRoot $relativePath
-  if (Test-Path $fullPath) {
-    Remove-Item -Recurse -Force $fullPath
-    Write-Host "[build_win] Removed $fullPath"
-  }
-}
-
 Write-Host "== Building NSIS installer =="
 
 # Debug: Print EnvRoot directory contents
@@ -222,8 +202,18 @@ Write-Host "=== EnvRoot=$EnvRoot ==="
 Write-Host "=== EnvRoot top files ==="
 Get-ChildItem -LiteralPath $EnvRoot -Force | Select-Object -First 50 | ForEach-Object { Write-Host $_.FullName }
 
-# Use the semver-compatible desktop version synced into Tauri/Cargo metadata.
-$Version = $DesktopVersion
+# Prioritize version from __version__.py to ensure accuracy
+$Version = $CurrentVersion
+if (-not $Version) {
+  # Fallback: try to get version from packed env metadata
+  try {
+    $Version = (& (Join-Path $EnvRoot "python.exe") -c "from importlib.metadata import version; print(version('sealclaw'))" 2>&1) -replace '\s+$', ''
+    Write-Host "[build_win] Using version from packed env metadata: $Version"
+  } catch {
+    Write-Host "[build_win] version from packed env failed: $_"
+  }
+}
+if (-not $Version) { $Version = "0.0.0"; Write-Host "[build_win] WARN: Using fallback version 0.0.0" }
 Write-Host "[build_win] Version determined: $Version"
 Write-Host "[build_win] SEALCLAW_VERSION=$Version OUTPUT_EXE will be under $Dist"
 $OutInstaller = Join-Path (Join-Path $RepoRoot $Dist) "SealClaw-Setup-$Version.exe"
