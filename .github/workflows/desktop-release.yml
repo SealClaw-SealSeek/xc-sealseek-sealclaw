@@ -79,7 +79,7 @@ jobs:
           for f in agent-runtime/dist/SealClaw-*.dmg; do
             [ -f "$f" ] || continue
             echo "Signing $f..."
-            npx --yes @tauri-apps/cli signer sign --private-key "$TAURI_SIGNING_PRIVATE_KEY" --password "$TAURI_SIGNING_PRIVATE_KEY_PASSWORD" "$f"
+            ./desktop-client/node_modules/.bin/tauri signer sign --private-key "$TAURI_SIGNING_PRIVATE_KEY" --password "$TAURI_SIGNING_PRIVATE_KEY_PASSWORD" "$f"
             echo " -> $f.sig created"
           done
 
@@ -178,7 +178,7 @@ jobs:
           if (-not $env:TAURI_SIGNING_PRIVATE_KEY) { Write-Host "No signing key, skipping."; exit 0 }
           Get-ChildItem agent-runtime/dist/SealClaw-Setup-*.exe | ForEach-Object {
             Write-Host "Signing $_..."
-            npx --yes @tauri-apps/cli signer sign --private-key $env:TAURI_SIGNING_PRIVATE_KEY --password $env:TAURI_SIGNING_PRIVATE_KEY_PASSWORD $_.FullName
+            .\desktop-client\node_modules\.bin\tauri signer sign --private-key $env:TAURI_SIGNING_PRIVATE_KEY --password $env:TAURI_SIGNING_PRIVATE_KEY_PASSWORD $_.FullName
             Write-Host " -> $($_.FullName).sig created"
           }
 
