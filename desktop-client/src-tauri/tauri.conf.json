@@ -36,7 +36,7 @@
   },
   "plugins": {
     "updater": {
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDY2QjEwNkRGOTA5MDZFMTIKUldRU2JwQ1Ezd2F4Wm1WZUJGZDBHaWVPRXE4dXh4d0VSc25IQm5LbUpzb1ZoNm1vMzRYbDhrK1cK",
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDRENUZBMjNCOTdGNjA4M0QKUldROUNQYVhPNkpmVFIrN3ZqRW5UMkFPQmp2b0FRQktaLzQ1NkNQR2RrUUtDc0o1UzZoNXdScjAK",
       "endpoints": [
         "https://gitee.com/xc-sealseek-ai/sealseek-sealclaw-desktop/raw/release/latest.json"
       ],
