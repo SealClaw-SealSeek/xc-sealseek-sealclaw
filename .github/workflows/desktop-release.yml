@@ -140,6 +140,13 @@ jobs:
         working-directory: .
         run: npm ci
 
+      - name: Install Rollup Windows native package
+        working-directory: desktop-client
+        shell: pwsh
+        run: |
+          $rollupVersion = node -p "require('./node_modules/rollup/package.json').version"
+          npm install --no-save "@rollup/rollup-win32-x64-msvc@$rollupVersion"
+
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@stable
 
