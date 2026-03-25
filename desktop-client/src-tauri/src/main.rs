@@ -4,6 +4,7 @@ mod commands;
 mod runtime;
 mod updater;
 
+#[cfg(debug_assertions)]
 use tauri::Manager;
 
 fn main() {

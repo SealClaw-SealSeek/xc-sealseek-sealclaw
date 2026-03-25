@@ -9,6 +9,7 @@ const GITEE_REPO: &str = "sealseek-sealclaw-desktop";
 #[derive(Deserialize)]
 struct GiteeRelease {
     tag_name: String,
+    #[allow(dead_code)]
     name: Option<String>,
     body: Option<String>,
     assets: Vec<GiteeAsset>,
