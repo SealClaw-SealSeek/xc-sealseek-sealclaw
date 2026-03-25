@@ -216,7 +216,13 @@ if (-not $Version) {
 if (-not $Version) { $Version = "0.0.0"; Write-Host "[build_win] WARN: Using fallback version 0.0.0" }
 Write-Host "[build_win] Version determined: $Version"
 Write-Host "[build_win] SEALCLAW_VERSION=$Version OUTPUT_EXE will be under $Dist"
-$OutInstaller = Join-Path (Join-Path $RepoRoot $Dist) "SealClaw-Setup-$Version.exe"
+# 若 $Dist 已是绝对路径（如 C:\dist），直接使用；否则相对于 $RepoRoot 拼接
+if ([System.IO.Path]::IsPathRooted($Dist)) {
+  $DistAbs = $Dist
+} else {
+  $DistAbs = Join-Path $RepoRoot $Dist
+}
+$OutInstaller = Join-Path $DistAbs "SealClaw-Setup-$Version.exe"
 # Pass absolute paths to NSIS (keep backslashes).
 $UnpackedFull = (Resolve-Path $EnvRoot).Path
 $OutputExeNsi = [System.IO.Path]::GetFullPath($OutInstaller)
