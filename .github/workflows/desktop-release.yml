@@ -16,6 +16,9 @@ permissions:
 jobs:
   build-macos:
     runs-on: macos-14
+    env:
+      TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+      TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
     defaults:
       run:
         working-directory: agent-runtime
@@ -75,10 +78,7 @@ jobs:
           conda run -n sealclaw-build bash -c 'CREATE_ZIP=1 ./scripts/pack/build_macos.sh'
 
       - name: Sign macOS artifact with Tauri signer
-        if: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY != '' }}
-        env:
-          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
-          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        if: env.TAURI_SIGNING_PRIVATE_KEY != ''
         run: |
           set -euo pipefail
           shopt -s nullglob
@@ -110,6 +110,9 @@ jobs:
 
   build-windows:
     runs-on: windows-latest
+    env:
+      TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+      TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
     defaults:
       run:
         working-directory: agent-runtime
@@ -176,11 +179,8 @@ jobs:
         run: conda run -n sealclaw-build pwsh -File ./scripts/pack/build_win.ps1
 
       - name: Sign Windows artifact with Tauri signer
-        if: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY != '' }}
+        if: env.TAURI_SIGNING_PRIVATE_KEY != ''
         shell: pwsh
-        env:
-          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
-          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         run: |
           $artifacts = Get-ChildItem dist/SealClaw-Setup-*.exe -ErrorAction Stop
           foreach ($artifact in $artifacts) {
@@ -211,6 +211,8 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+    env:
+      TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -220,8 +222,6 @@ jobs:
         run: python3 agent-runtime/scripts/sync_desktop_version.py --sync --github-output "$GITHUB_OUTPUT"
 
       - name: Verify updater signing prerequisites
-        env:
-          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
         run: |
           if [ -z "$TAURI_SIGNING_PRIVATE_KEY" ]; then
             echo "::error::TAURI_SIGNING_PRIVATE_KEY is required for tag releases because updater metadata is published."
