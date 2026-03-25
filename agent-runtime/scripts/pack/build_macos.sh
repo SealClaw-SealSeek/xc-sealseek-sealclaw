@@ -62,7 +62,6 @@ fi
 # 编译 Tauri 二进制（custom-protocol 会将前端编译进二进制）
 DESKTOP_CLIENT_DIR="${REPO_ROOT}/../desktop-client"
 echo "== Building Tauri binary =="
-(cd "$DESKTOP_CLIENT_DIR" && npm run build)
 (cd "$DESKTOP_CLIENT_DIR/src-tauri" && cargo build --release)
 
 # 将 Tauri 二进制复制到 .app/Contents/MacOS/（替换 bash 脚本启动器）

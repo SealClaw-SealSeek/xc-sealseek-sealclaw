@@ -162,8 +162,6 @@ if (Test-Path $pythonExe) {
 $DesktopClientDir = Join-Path (Split-Path $RepoRoot -Parent) "desktop-client"
 Write-Host "== Building Tauri binary =="
 Push-Location $DesktopClientDir
-& npm run build
-if ($LASTEXITCODE -ne 0) { throw "npm run build failed" }
 Push-Location (Join-Path $DesktopClientDir "src-tauri")
 & cargo build --release
 if ($LASTEXITCODE -ne 0) { throw "cargo build failed" }
