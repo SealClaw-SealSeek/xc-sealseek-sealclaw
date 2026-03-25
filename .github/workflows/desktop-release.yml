@@ -157,10 +157,12 @@ jobs:
         shell: pwsh
         run: |
           choco install nsis -y
-          # 将 NSIS 目录写入 GITHUB_PATH 确保后续步骤可用
-          "$env:ProgramFiles\NSIS" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-          # 当前步骤内刷新 PATH 并验证
-          $env:PATH += ";$env:ProgramFiles\NSIS"
+          # 从系统环境重新加载 PATH（choco shim 在当前会话中不会自动生效）
+          $env:PATH = [System.Environment]::GetEnvironmentVariable("PATH", "Machine") + ";" + `
+                      [System.Environment]::GetEnvironmentVariable("PATH", "User")
+          # 同时写入 GITHUB_PATH 确保后续步骤也能找到 makensis
+          "C:\Program Files (x86)\NSIS" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          "C:\ProgramData\chocolatey\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
           makensis /VERSION
 
       - name: Clean dist directory
