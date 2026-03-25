@@ -64,6 +64,12 @@ if (-not (Test-Path $Archive)) {
   throw "Archive not created: $Archive"
 }
 
+Write-Host "== Syncing desktop version metadata =="
+$DesktopVersion = (& python (Join-Path $RepoRoot "scripts\sync_desktop_version.py") --sync --field desktop).Trim()
+if (-not $DesktopVersion) {
+  throw "Failed to resolve desktop version from sync_desktop_version.py"
+}
+
 Write-Host "== Unpacking env =="
 if (Test-Path $Unpacked) { Remove-Item -Recurse -Force $Unpacked }
 Expand-Archive -Path $Archive -DestinationPath $Unpacked -Force
@@ -156,8 +162,6 @@ if (Test-Path $pythonExe) {
 $DesktopClientDir = Join-Path (Split-Path $RepoRoot -Parent) "desktop-client"
 Write-Host "== Building Tauri binary =="
 Push-Location $DesktopClientDir
-& npm install
-if ($LASTEXITCODE -ne 0) { throw "npm install failed" }
 & npm run build
 if ($LASTEXITCODE -ne 0) { throw "npm run build failed" }
 Push-Location (Join-Path $DesktopClientDir "src-tauri")
@@ -202,18 +206,8 @@ Write-Host "=== EnvRoot=$EnvRoot ==="
 Write-Host "=== EnvRoot top files ==="
 Get-ChildItem -LiteralPath $EnvRoot -Force | Select-Object -First 50 | ForEach-Object { Write-Host $_.FullName }
 
-# Prioritize version from __version__.py to ensure accuracy
-$Version = $CurrentVersion
-if (-not $Version) {
-  # Fallback: try to get version from packed env metadata
-  try {
-    $Version = (& (Join-Path $EnvRoot "python.exe") -c "from importlib.metadata import version; print(version('sealclaw'))" 2>&1) -replace '\s+$', ''
-    Write-Host "[build_win] Using version from packed env metadata: $Version"
-  } catch {
-    Write-Host "[build_win] version from packed env failed: $_"
-  }
-}
-if (-not $Version) { $Version = "0.0.0"; Write-Host "[build_win] WARN: Using fallback version 0.0.0" }
+# Use the semver-compatible desktop version synced into Tauri/Cargo metadata.
+$Version = $DesktopVersion
 Write-Host "[build_win] Version determined: $Version"
 Write-Host "[build_win] SEALCLAW_VERSION=$Version OUTPUT_EXE will be under $Dist"
 $OutInstaller = Join-Path (Join-Path $RepoRoot $Dist) "SealClaw-Setup-$Version.exe"

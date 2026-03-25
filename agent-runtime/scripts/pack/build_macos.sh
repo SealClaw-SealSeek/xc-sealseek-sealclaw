@@ -42,6 +42,9 @@ fi
 echo "== Building conda-packed env =="
 python "${PACK_DIR}/build_common.py" --output "$ARCHIVE" --format tar.gz --extras "ollama"
 
+echo "== Syncing desktop version metadata =="
+DESKTOP_VERSION="$(python "${REPO_ROOT}/scripts/sync_desktop_version.py" --sync --field desktop)"
+
 echo "== Building .app bundle =="
 rm -rf "$APP_DIR"
 mkdir -p "${APP_DIR}/Contents/MacOS"
@@ -59,7 +62,7 @@ fi
 # 编译 Tauri 二进制（custom-protocol 会将前端编译进二进制）
 DESKTOP_CLIENT_DIR="${REPO_ROOT}/../desktop-client"
 echo "== Building Tauri binary =="
-(cd "$DESKTOP_CLIENT_DIR" && npm install && npm run build)
+(cd "$DESKTOP_CLIENT_DIR" && npm run build)
 (cd "$DESKTOP_CLIENT_DIR/src-tauri" && cargo build --release)
 
 # 将 Tauri 二进制复制到 .app/Contents/MacOS/（替换 bash 脚本启动器）
@@ -80,17 +83,9 @@ else
 fi
 
 # Info.plist (include icon key if icon.icns exists)
-# Prioritize version from __version__.py to ensure accuracy
-VERSION="${CURRENT_VERSION}"
-if [[ -z "${VERSION}" ]]; then
-  # Fallback: try to get version from packed env metadata
-  VERSION="$("${APP_DIR}/Contents/Resources/env/bin/python" -c \
-    "from importlib.metadata import version; print(version('sealclaw'))" 2>/dev/null \
-    || echo "0.0.0")"
-  echo "Using version from packed env metadata: ${VERSION}"
-else
-  echo "Version determined from __version__.py: ${VERSION}"
-fi
+# Use the semver-compatible desktop version synced into Tauri/Cargo metadata.
+VERSION="${DESKTOP_VERSION}"
+echo "Desktop version determined from sync_desktop_version.py: ${VERSION}"
 ICON_PLIST=""
 if [[ -f "${PACK_DIR}/assets/icon.icns" ]]; then
   cp "${PACK_DIR}/assets/icon.icns" "${APP_DIR}/Contents/Resources/"

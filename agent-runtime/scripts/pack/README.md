@@ -17,12 +17,17 @@ Dependencies follow `pyproject.toml`.
 
 - **conda** (Miniconda/Anaconda) on PATH
 - **Node.js / npm** (for the console frontend)
+- Run `npm ci` once from the workspace root before local desktop packaging
 - (Windows only) **NSIS**: `makensis` on PATH
 - **Icons**: Pre-generated `icon.ico` (Windows) and `icon.icns` (macOS) are included in `scripts/pack/assets/`
 
 ## One-click build
 
 From the **repo root**:
+
+```bash
+npm ci
+```
 
 **macOS**
 ```bash
@@ -75,10 +80,11 @@ When users download the SealClaw macOS app (e.g. from Releases) as a `.app` (in 
 
 `.github/workflows/desktop-release.yml`:
 
-- **Triggers**: Release publish or manual workflow_dispatch
+- **Triggers**: `workflow_dispatch` builds artifacts only; `push` of `v<desktop-semver>` tags builds and publishes releases
+- **Version sync**: CI derives the desktop version from `agent-runtime/src/sealclaw/__version__.py`, then syncs Tauri/Cargo metadata before build
 - **Windows**: Build console → temporary conda env + conda-pack → NSIS → upload artifact
 - **macOS**: Build console → temporary conda env + conda-pack → .app → zip → upload artifact
-- **Release**: When triggered by a release, uploads the Windows installer and macOS zip as release assets
+- **Release**: Tag releases require `TAURI_SIGNING_PRIVATE_KEY`; CI publishes signed assets plus `latest.json`
 
 ## Script reference
 

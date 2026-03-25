@@ -16,12 +16,17 @@
 
 - **conda**（Miniconda/Anaconda）在 PATH
 - **Node.js / npm**（用于构建 console 前端）
+- 本地打包桌面端前，先在工作区根目录执行一次 `npm ci`
 - （仅 Windows）**NSIS**：`makensis` 在 PATH
 - **图标**：预生成的 `icon.ico` (Windows) 和 `icon.icns` (macOS) 已包含在 `scripts/pack/assets/` 中
 
 ## 一键打包
 
 在**仓库根目录**执行：
+
+```bash
+npm ci
+```
 
 **macOS**
 ```bash
@@ -73,10 +78,11 @@ PYTHONPATH= PYTHONHOME="$APP_ENV" "$APP_ENV/bin/python" -m sealclaw desktop
 
 `.github/workflows/desktop-release.yml`：
 
-- **触发**: Release 发布 或 手动 workflow_dispatch
+- **触发**: `workflow_dispatch` 只构建 artifact；推送 `v<desktop-semver>` tag 时才构建并发布
+- **版本同步**: CI 以 `agent-runtime/src/sealclaw/__version__.py` 为源，同步 Tauri/Cargo 版本后再打包
 - **Windows**: 构建 console → 临时 conda 环境 + conda-pack → NSIS → 上传 artifact
 - **macOS**: 构建 console → 临时 conda 环境 + conda-pack → .app → zip → 上传 artifact
-- **Release**: 若由 release 触发，则把 Windows 安装包与 macOS zip 上传到该 Release 的附件
+- **Release**: tag 发布要求配置 `TAURI_SIGNING_PRIVATE_KEY`，CI 会上传已签名产物和 `latest.json`
 
 ## 脚本说明
 

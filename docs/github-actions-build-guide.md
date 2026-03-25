@@ -64,6 +64,8 @@ git push github main
 4. 选择分支（如 `dev`），点击 **Run workflow**
 5. 等待构建完成（预计 15–25 分钟，首次可能更久因为无缓存）
 
+> 手动触发只会产出 Artifacts，不会上传 GitHub Release，也不会生成 `latest.json`。
+
 ### 构建过程说明
 
 CI 会自动完成以下步骤（macOS 和 Windows 并行）：
@@ -73,12 +75,12 @@ CI 会自动完成以下步骤（macOS 和 Windows 并行）：
 | 1 | Checkout 代码 | Checkout 代码 |
 | 2 | 安装 Node 20 | 安装 Node 20 |
 | 3 | 安装 Rust 工具链 | 安装 Rust 工具链 |
-| 4 | 安装 Miniconda (Python 3.10) | 安装 Miniconda (Python 3.10) |
+| 4 | 安装 Miniconda (Python 3.12) | 安装 Miniconda (Python 3.12) |
 | 5 | — | 安装 NSIS |
-| 6 | 构建 Python wheel | 构建 Python wheel |
-| 7 | conda-pack 打包 Python 环境 | conda-pack 打包 Python 环境 |
-| 8 | 编译 Tauri 二进制 (cargo build --release) | 编译 Tauri 二进制 (cargo build --release) |
-| 9 | 组装 .app 并打 zip | 组装 NSIS 安装包 .exe |
+| 6 | 根目录执行 `npm ci`（workspace 依赖只安装一次） | 根目录执行 `npm ci`（workspace 依赖只安装一次） |
+| 7 | 同步桌面端版本（从 `__version__.py` 派生 semver） | 同步桌面端版本（从 `__version__.py` 派生 semver） |
+| 8 | 构建 Python wheel + conda-pack 环境 | 构建 Python wheel + conda-pack 环境 |
+| 9 | 编译 Tauri 二进制并组装产物 | 编译 Tauri 二进制并组装产物 |
 
 ---
 
@@ -89,8 +91,8 @@ CI 会自动完成以下步骤（macOS 和 Windows 并行）：
 
 | 产物名称 | 内容 |
 |----------|------|
-| `SealClaw-Desktop-macOS-0.1.0b3` | `SealClaw-0.1.0b3-macOS.zip`，解压得到 `SealClaw.app` |
-| `SealClaw-Desktop-Windows-0.1.0b3` | `SealClaw-Setup-0.1.0b3.exe` NSIS 安装包 |
+| `SealClaw-Desktop-macOS-0.1.0-beta.3` | `SealClaw-0.1.0-beta.3-macOS.zip`，解压得到 `SealClaw.app` |
+| `SealClaw-Desktop-Windows-0.1.0-beta.3` | `SealClaw-Setup-0.1.0-beta.3.exe` NSIS 安装包 |
 
 3. 点击下载即可
 
@@ -98,7 +100,7 @@ CI 会自动完成以下步骤（macOS 和 Windows 并行）：
 
 ```bash
 # 解压
-unzip SealClaw-0.1.0b3-macOS.zip
+unzip SealClaw-0.1.0-beta.3-macOS.zip
 
 # 移除隔离属性（未签名应用需要）
 xattr -cr SealClaw.app
@@ -109,7 +111,7 @@ open SealClaw.app
 
 ### Windows 使用方式
 
-双击 `SealClaw-Setup-0.1.0b3.exe`，按安装向导完成安装。
+双击 `SealClaw-Setup-0.1.0-beta.3.exe`，按安装向导完成安装。
 安装后从开始菜单或桌面快捷方式启动 **SealClaw Desktop**。
 
 ---
@@ -120,7 +122,7 @@ open SealClaw.app
 
 ```bash
 # 解压 .app
-unzip SealClaw-0.1.0b3-macOS.zip
+unzip SealClaw-0.1.0-beta.3-macOS.zip
 
 # 制作 DMG
 hdiutil create \
@@ -128,7 +130,7 @@ hdiutil create \
   -srcfolder SealClaw.app \
   -ov \
   -format UDZO \
-  SealClaw-0.1.0b3-macOS.dmg
+  SealClaw-0.1.0-beta.3-macOS.dmg
 ```
 
 如需 CI 中自动生成 DMG，可在 workflow 的 macOS job 中添加此步骤。
@@ -163,8 +165,8 @@ hdiutil create \
 
 ### 6.3 触发方式
 
-Gitee 上传仅在 **release 事件**时触发（不在 workflow_dispatch 手动触发时执行）。
-流程：在 GitHub 发布 Release → CI 构建 → 自动上传到 GitHub Release + Gitee Release。
+Gitee 上传仅在 **tag 发布** 时触发，不在 `workflow_dispatch` 手动触发时执行。
+流程：推送匹配版本的 tag → CI 构建 → 自动上传到 GitHub Release + Gitee Release。
 
 ---
 
@@ -218,10 +220,10 @@ jobs:
 1. 在 Gitee 上开发、提交代码
 2. 修改 agent-runtime/src/sealclaw/__version__.py 中的版本号
 3. 代码同步到 GitHub（手动 push 或镜像自动同步）
-4. 在 GitHub 上创建 Release：
-   - 标签名：v0.1.0（与版本号对应）
-   - 标题：SealClaw Desktop v0.1.0
-5. 发布后自动触发 CI 构建
+4. 推送 Git tag：
+   - Python 版本若为 `0.1.0b3`，桌面端版本会派生为 `0.1.0-beta.3`
+   - 标签名必须是 `v0.1.0-beta.3`
+5. 推送 tag 后自动触发 CI 构建与发布
 6. 构建完成后产物自动附加到 GitHub Release
 7. 如果配置了 Gitee Token，产物也会上传到 Gitee Release
 ```
@@ -239,7 +241,7 @@ jobs:
 |------|------|------|
 | `conda-pack` 失败 | Python 依赖安装问题 | 检查 `pyproject.toml` 中的依赖是否能在 CI 环境中安装 |
 | `cargo build` 失败 | Rust 编译错误 | 本地先 `cargo check` 确认编译通过再推送 |
-| `npm install` 失败 | Node 依赖问题 | 检查 `package-lock.json` 是否已提交 |
+| `npm ci` 失败 | Node 依赖问题 | 检查 `package-lock.json` 是否已提交，且 workspace 依赖定义与锁文件一致 |
 | `makensis` 失败 | NSIS 脚本错误 | 查看 NSIS 输出日志定位具体错误 |
 | Artifact 为空 | 产物路径不匹配 | 检查 `dist/` 目录下是否有对应文件名 |
 
