@@ -197,6 +197,24 @@ if (Test-Path $IconSrc) {
   Write-Host "[build_win] WARN: icon.ico not found at $IconSrc"
 }
 
+# Remove test and benchmark assets that are not needed at runtime and can exceed
+# Windows/NSIS path handling limits during recursive packaging.
+$PrunePaths = @(
+  "Lib\site-packages\litellm\proxy\guardrails\guardrail_hooks\litellm_content_filter\guardrail_benchmarks",
+  "Lib\site-packages\win32\test",
+  "Lib\site-packages\docker\tests",
+  "Lib\site-packages\pip\_vendor\distlib\tests"
+)
+
+Write-Host "== Pruning non-runtime files before NSIS packaging =="
+foreach ($relativePath in $PrunePaths) {
+  $fullPath = Join-Path $EnvRoot $relativePath
+  if (Test-Path $fullPath) {
+    Remove-Item -Recurse -Force $fullPath
+    Write-Host "[build_win] Removed $fullPath"
+  }
+}
+
 Write-Host "== Building NSIS installer =="
 
 # Debug: Print EnvRoot directory contents
