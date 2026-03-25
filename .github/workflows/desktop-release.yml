@@ -70,12 +70,13 @@ jobs:
           conda run -n sealclaw-build bash -c 'CREATE_DMG=1 ./scripts/pack/build_macos.sh'
 
       - name: Sign macOS artifact with Tauri signer
+        working-directory: .
         env:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         run: |
           [ -z "$TAURI_SIGNING_PRIVATE_KEY" ] && echo "No signing key, skipping." && exit 0
-          for f in dist/SealClaw-*.dmg; do
+          for f in agent-runtime/dist/SealClaw-*.dmg; do
             [ -f "$f" ] || continue
             echo "Signing $f..."
             npx --yes @tauri-apps/cli signer sign --private-key "$TAURI_SIGNING_PRIVATE_KEY" --password "$TAURI_SIGNING_PRIVATE_KEY_PASSWORD" "$f"
@@ -163,13 +164,14 @@ jobs:
         run: conda run -n sealclaw-build pwsh -File ./scripts/pack/build_win.ps1
 
       - name: Sign Windows artifact with Tauri signer
+        working-directory: .
         shell: pwsh
         env:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         run: |
           if (-not $env:TAURI_SIGNING_PRIVATE_KEY) { Write-Host "No signing key, skipping."; exit 0 }
-          Get-ChildItem dist/SealClaw-Setup-*.exe | ForEach-Object {
+          Get-ChildItem agent-runtime/dist/SealClaw-Setup-*.exe | ForEach-Object {
             Write-Host "Signing $_..."
             npx --yes @tauri-apps/cli signer sign --private-key $env:TAURI_SIGNING_PRIVATE_KEY --password $env:TAURI_SIGNING_PRIVATE_KEY_PASSWORD $_.FullName
             Write-Host " -> $($_.FullName).sig created"
