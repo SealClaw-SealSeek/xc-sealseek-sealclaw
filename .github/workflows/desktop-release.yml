@@ -136,6 +136,11 @@ jobs:
         working-directory: desktop-client
         run: npm install @rollup/rollup-win32-x64-msvc
 
+      - name: Install Tauri CLI Windows native module
+        shell: pwsh
+        working-directory: desktop-client
+        run: npm install @tauri-apps/cli-win32-x64-msvc
+
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@stable
 
