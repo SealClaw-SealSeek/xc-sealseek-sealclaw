@@ -15,7 +15,11 @@
     "preview:prod": "vite preview --mode production",
     "preview:test": "vite preview --mode test",
     "tauri:dev": "tauri dev",
-    "tauri:build": "tauri build"
+    "tauri:build": "tauri build",
+    "tauri:win:prewarm": "bash ./scripts/tauri-prewarm-win.sh",
+    "tauri:win:prewarm:clean": "WIN_PREWARM_FORCE_CLEAN=1 bash ./scripts/tauri-prewarm-win.sh",
+    "tauri:build:win-exe": "bash ./scripts/tauri-build-win.sh exe",
+    "tauri:build:win-nsis": "bash ./scripts/tauri-build-win.sh nsis"
   },
   "dependencies": {
     "@agentscope-ai/chat": "^1.1.51",

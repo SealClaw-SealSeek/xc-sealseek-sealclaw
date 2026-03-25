@@ -1,5 +1,5 @@
 # Build SealClaw Desktop: Tauri binary + conda-pack Python environment
-# Windows: NSIS installer, macOS: .app bundle
+# Windows: NSIS installer, macOS: .app bundle (.dmg)
 # Runs automatically on release publish; also manually via Actions tab.
 
 name: SealClaw Desktop Build
@@ -127,19 +127,22 @@ jobs:
           condarc-file: .github/condarc
           conda-remove-defaults: false
 
+      - name: Install create-dmg
+        run: brew install create-dmg
+
       - name: Clean dist directory
         run: rm -rf dist && mkdir -p dist
 
-      - name: Build macOS .app
+      - name: Build macOS .app and DMG
         run: |
           chmod +x scripts/pack/build_macos.sh
-          conda run -n sealclaw-build bash -c 'CREATE_ZIP=1 ./scripts/pack/build_macos.sh'
+          conda run -n sealclaw-build bash -c 'CREATE_DMG=1 ./scripts/pack/build_macos.sh'
 
       - name: Upload macOS artifact
         uses: actions/upload-artifact@v4
         with:
           name: SealClaw-Desktop-macOS-${{ steps.version.outputs.version }}
-          path: dist/SealClaw-*.zip
+          path: dist/SealClaw-*.dmg
 
   upload-release:
     needs: [build-windows, build-macos]
@@ -154,14 +157,14 @@ jobs:
       - name: Move artifacts to root for upload
         run: |
           mv SealClaw-Desktop-Windows-*/SealClaw-Setup-*.exe . 2>/dev/null || true
-          mv SealClaw-Desktop-macOS-*/SealClaw-*.zip . 2>/dev/null || true
+          mv SealClaw-Desktop-macOS-*/SealClaw-*.dmg . 2>/dev/null || true
 
       - name: Upload to GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           files: |
             SealClaw-Setup-*.exe
-            SealClaw-*-macOS.zip
+            SealClaw-*-macOS.dmg
           fail_on_unmatched_files: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -186,7 +189,7 @@ jobs:
           fi
 
           echo "Uploading to Gitee Release ID: $RELEASE_ID"
-          for f in SealClaw-Setup-*.exe SealClaw-*-macOS.zip; do
+          for f in SealClaw-Setup-*.exe SealClaw-*-macOS.dmg; do
             [ -f "$f" ] || continue
             echo "Uploading $f..."
             curl -s -X POST "https://gitee.com/api/v5/repos/${GITEE_OWNER}/${GITEE_REPO}/releases/${RELEASE_ID}/attach_files" \

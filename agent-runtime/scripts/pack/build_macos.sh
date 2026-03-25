@@ -122,3 +122,24 @@ if [[ -n "${CREATE_ZIP}" ]]; then
   ditto -c -k --sequesterRsrc --keepParent "${APP_DIR}" "${ZIP_NAME}"
   echo "== Created ${ZIP_NAME} =="
 fi
+
+# Optional: create DMG for distribution (set CREATE_DMG=1)
+if [[ -n "${CREATE_DMG}" ]]; then
+  DMG_NAME="${DIST}/SealClaw-${VERSION}-macOS.dmg"
+  # create-dmg 在目标文件已存在时会报错，先清理
+  rm -f "$DMG_NAME"
+  # create-dmg 对 "no icons found" 等非致命问题返回退出码 2，需容错
+  create-dmg \
+    --volname "SealClaw ${VERSION}" \
+    --volicon "${PACK_DIR}/assets/icon.icns" \
+    --window-pos 200 120 \
+    --window-size 660 400 \
+    --icon-size 80 \
+    --icon "SealClaw.app" 180 200 \
+    --app-drop-link 480 200 \
+    --no-internet-enable \
+    "$DMG_NAME" \
+    "$APP_DIR" \
+    || test $? -eq 2
+  echo "== Created ${DMG_NAME} =="
+fi

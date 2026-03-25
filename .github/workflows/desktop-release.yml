@@ -1,5 +1,5 @@
 # Build SealClaw Desktop: Tauri binary + conda-pack Python environment
-# Windows: NSIS installer, macOS: .app bundle (.zip)
+# Windows: NSIS installer, macOS: .app bundle (.dmg)
 # 触发方式：推送 v* tag 自动打包发版，也可手动触发。
 
 name: SealClaw Desktop Build
@@ -22,6 +22,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
       - name: Get version
         id: version
@@ -31,10 +33,12 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "20"
+          cache: "npm"
+          cache-dependency-path: package-lock.json
 
-      - name: Install desktop-client npm dependencies
-        working-directory: desktop-client
-        run: npm install
+      - name: Install npm dependencies (workspace)
+        run: npm ci
+        working-directory: .
 
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@stable
@@ -53,14 +57,17 @@ jobs:
           condarc-file: agent-runtime/.github/condarc
           conda-remove-defaults: true
 
+      - name: Install create-dmg
+        run: brew install create-dmg
+
       - name: Clean dist directory
         run: rm -rf dist && mkdir -p dist
 
-      - name: Build macOS .app
+      - name: Build macOS .app and DMG
         shell: bash -l {0}
         run: |
           chmod +x scripts/pack/build_macos.sh
-          conda run -n sealclaw-build bash -c 'CREATE_ZIP=1 ./scripts/pack/build_macos.sh'
+          conda run -n sealclaw-build bash -c 'CREATE_DMG=1 ./scripts/pack/build_macos.sh'
 
       - name: Sign macOS artifact with Tauri signer
         if: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY != '' }}
@@ -68,20 +75,26 @@ jobs:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         run: |
-          for f in dist/SealClaw-*.zip; do
+          for f in dist/SealClaw-*.dmg; do
             [ -f "$f" ] || continue
             echo "Signing $f..."
             npx --yes @tauri-apps/cli signer sign --private-key "$TAURI_SIGNING_PRIVATE_KEY" --password "$TAURI_SIGNING_PRIVATE_KEY_PASSWORD" "$f"
             echo " -> $f.sig created"
           done
 
+      - name: List dist (on failure)
+        if: failure()
+        run: |
+          echo "=== dist contents ==="
+          find dist -maxdepth 3 -type f 2>/dev/null || true
+
       - name: Upload macOS artifact
         uses: actions/upload-artifact@v4
         with:
           name: SealClaw-Desktop-macOS-${{ steps.version.outputs.version }}
           path: |
-            agent-runtime/dist/SealClaw-*.zip
-            agent-runtime/dist/SealClaw-*.zip.sig
+            agent-runtime/dist/SealClaw-*.dmg
+            agent-runtime/dist/SealClaw-*.dmg.sig
 
   build-windows:
     runs-on: windows-latest
@@ -91,6 +104,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
       - name: Get version
         id: version
@@ -108,17 +123,12 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "20"
+          cache: "npm"
+          cache-dependency-path: package-lock.json
 
-      - name: Install desktop-client npm dependencies
-        working-directory: desktop-client
-        shell: pwsh
-        run: |
-          if (Test-Path node_modules) {
-            Remove-Item -Recurse -Force node_modules
-          }
-          npm install
-          npm install -D @rollup/rollup-win32-x64-msvc
-          npm ls @rollup/rollup-win32-x64-msvc
+      - name: Install npm dependencies (workspace)
+        run: npm ci
+        working-directory: .
 
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@stable
@@ -171,6 +181,8 @@ jobs:
         run: |
           Write-Host "=== dist contents ==="
           Get-ChildItem -Path dist -Recurse -Depth 2 -ErrorAction SilentlyContinue | ForEach-Object { $_.FullName }
+          Write-Host "=== dist\win-unpacked contents ==="
+          Get-ChildItem -Path "dist\win-unpacked" -Recurse -Depth 2 -ErrorAction SilentlyContinue | ForEach-Object { $_.FullName }
 
       - name: Upload Windows artifact
         uses: actions/upload-artifact@v4
@@ -194,8 +206,8 @@ jobs:
         run: |
           mv SealClaw-Desktop-Windows-*/SealClaw-Setup-*.exe . 2>/dev/null || true
           mv SealClaw-Desktop-Windows-*/SealClaw-Setup-*.exe.sig . 2>/dev/null || true
-          mv SealClaw-Desktop-macOS-*/SealClaw-*.zip . 2>/dev/null || true
-          mv SealClaw-Desktop-macOS-*/SealClaw-*.zip.sig . 2>/dev/null || true
+          mv SealClaw-Desktop-macOS-*/SealClaw-*.dmg . 2>/dev/null || true
+          mv SealClaw-Desktop-macOS-*/SealClaw-*.dmg.sig . 2>/dev/null || true
 
       - name: Generate update manifest (latest.json)
         run: |
@@ -210,7 +222,7 @@ jobs:
           for f in SealClaw-Setup-*.exe.sig; do
             [ -f "$f" ] && WIN_SIG=$(cat "$f")
           done
-          for f in SealClaw-*-macOS.zip.sig; do
+          for f in SealClaw-*-macOS.dmg.sig; do
             [ -f "$f" ] && MAC_SIG=$(cat "$f")
           done
 
@@ -225,11 +237,11 @@ jobs:
             "pub_date": "${DATE}",
             "platforms": {
               "darwin-aarch64": {
-                "url": "${GH_BASE}/$(ls SealClaw-*-macOS.zip 2>/dev/null | head -1)",
+                "url": "${GH_BASE}/$(ls SealClaw-*-macOS.dmg 2>/dev/null | head -1)",
                 "signature": "${MAC_SIG}"
               },
               "darwin-x86_64": {
-                "url": "${GH_BASE}/$(ls SealClaw-*-macOS.zip 2>/dev/null | head -1)",
+                "url": "${GH_BASE}/$(ls SealClaw-*-macOS.dmg 2>/dev/null | head -1)",
                 "signature": "${MAC_SIG}"
               },
               "windows-x86_64": {
@@ -248,8 +260,8 @@ jobs:
           files: |
             SealClaw-Setup-*.exe
             SealClaw-Setup-*.exe.sig
-            SealClaw-*-macOS.zip
-            SealClaw-*-macOS.zip.sig
+            SealClaw-*-macOS.dmg
+            SealClaw-*-macOS.dmg.sig
             latest.json
           fail_on_unmatched_files: false
         env:
@@ -274,7 +286,7 @@ jobs:
           fi
 
           echo "Uploading to Gitee Release ID: $RELEASE_ID"
-          for f in SealClaw-Setup-*.exe SealClaw-Setup-*.exe.sig SealClaw-*-macOS.zip SealClaw-*-macOS.zip.sig latest.json; do
+          for f in SealClaw-Setup-*.exe SealClaw-Setup-*.exe.sig SealClaw-*-macOS.dmg SealClaw-*-macOS.dmg.sig latest.json; do
             [ -f "$f" ] || continue
             echo "Uploading $f..."
             curl -s -X POST "https://gitee.com/api/v5/repos/${GITEE_OWNER}/${GITEE_REPO}/releases/${RELEASE_ID}/attach_files" \
