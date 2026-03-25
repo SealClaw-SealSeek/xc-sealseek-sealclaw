@@ -172,6 +172,8 @@ jobs:
 
       - name: Build Windows installer
         shell: pwsh
+        env:
+          DIST: C:\dist
         run: conda run -n sealclaw-build pwsh -File ./scripts/pack/build_win.ps1
 
       - name: Sign Windows artifact with Tauri signer
@@ -182,7 +184,7 @@ jobs:
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         run: |
           if (-not $env:TAURI_SIGNING_PRIVATE_KEY) { Write-Host "No signing key, skipping."; exit 0 }
-          Get-ChildItem agent-runtime/dist/SealClaw-Setup-*.exe | ForEach-Object {
+          Get-ChildItem C:\dist\SealClaw-Setup-*.exe | ForEach-Object {
             Write-Host "Signing $_..."
             .\desktop-client\node_modules\.bin\tauri signer sign --private-key $env:TAURI_SIGNING_PRIVATE_KEY --password $env:TAURI_SIGNING_PRIVATE_KEY_PASSWORD $_.FullName
             Write-Host " -> $($_.FullName).sig created"
@@ -202,8 +204,8 @@ jobs:
         with:
           name: SealClaw-Desktop-Windows-${{ steps.version.outputs.version }}
           path: |
-            agent-runtime/dist/SealClaw-Setup-*.exe
-            agent-runtime/dist/SealClaw-Setup-*.exe.sig
+            C:\dist\SealClaw-Setup-*.exe
+            C:\dist\SealClaw-Setup-*.exe.sig
 
   upload-release:
     needs: [build-windows, build-macos]
