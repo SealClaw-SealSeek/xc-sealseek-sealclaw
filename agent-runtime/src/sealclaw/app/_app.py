@@ -261,6 +261,7 @@ desktop_origins = [
     "http://127.0.0.1:1420",
     "tauri://localhost",
     "https://tauri.localhost",
+    "http://tauri.localhost",       # Windows WebView2 实际使用 http 协议
 ]
 origins = [o.strip() for o in CORS_ORIGINS.split(",") if o.strip()]
 for origin in desktop_origins:
