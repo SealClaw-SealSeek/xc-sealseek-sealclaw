@@ -37,6 +37,7 @@ export default defineConfig(({ mode }) => {
       port: 1420,
       strictPort: true,
     },
+    assetsInclude: ["**/*.svg"],
     optimizeDeps: {
       include: ["@agentscope-ai/design"],
       esbuildOptions: {
