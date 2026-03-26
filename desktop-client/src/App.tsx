@@ -1,6 +1,6 @@
 import { createGlobalStyle } from "antd-style";
 import { ConfigProvider, bailianTheme } from "@agentscope-ai/design";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import zhCN from "antd/locale/zh_CN";
@@ -8,7 +8,7 @@ import enUS from "antd/locale/en_US";
 import jaJP from "antd/locale/ja_JP";
 import ruRU from "antd/locale/ru_RU";
 import type { Locale } from "antd/es/locale";
-import { Button, Result, Spin, theme as antdTheme } from "antd";
+import { Button, theme as antdTheme } from "antd";
 import dayjs from "dayjs";
 import "dayjs/locale/zh-cn";
 import "dayjs/locale/ja";
@@ -16,13 +16,8 @@ import "dayjs/locale/ru";
 import MainLayout from "./layouts/MainLayout";
 import { ThemeProvider, useTheme } from "./contexts/ThemeContext";
 import { UpdateProvider } from "./contexts/UpdateContext";
-import LoginPage from "./pages/Login";
-import { authApi } from "./api/modules/auth";
-import {
-  getApiToken,
-  clearAuthToken,
-  getRuntimeBaseUrl,
-} from "./api/config";
+import { getRuntimeBaseUrl } from "./api/config";
+import { BRAND_NAME, BRAND_LOGO_URL } from "./constants/brand";
 import "./styles/layout.css";
 import "./styles/form-override.css";
 
@@ -47,26 +42,6 @@ const GlobalStyle = createGlobalStyle`
 }
 `;
 
-function withTimeout<T>(
-  promise: Promise<T>,
-  ms: number,
-  message: string,
-): Promise<T> {
-  return new Promise((resolve, reject) => {
-    const timer = window.setTimeout(() => reject(new Error(message)), ms);
-    promise.then(
-      (value) => {
-        window.clearTimeout(timer);
-        resolve(value);
-      },
-      (error) => {
-        window.clearTimeout(timer);
-        reject(error);
-      },
-    );
-  });
-}
-
 /** 轮询等待 Python 后端就绪（最多 maxWait 毫秒） */
 async function waitForRuntime(
   signal: { cancelled: boolean },
@@ -81,7 +56,7 @@ async function waitForRuntime(
   let attempt = 0;
   while (!signal.cancelled && Date.now() - start < maxWait) {
     attempt++;
-    onStatus(`Waiting for backend to start... (${attempt})`);
+    onStatus(`正在等待后端启动... (${attempt})`);
     try {
       await fetch(healthUrl, {
         method: "GET",
@@ -97,60 +72,130 @@ async function waitForRuntime(
   return false;
 }
 
+function StartupScreen({
+  message,
+  error,
+}: {
+  message: string;
+  error?: boolean;
+}) {
+  return (
+    <div
+      style={{
+        height: "100vh",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        background: "linear-gradient(160deg, #0f1117 0%, #1a1d2e 60%, #0d1520 100%)",
+        gap: 0,
+        userSelect: "none",
+      }}
+    >
+      {/* logo */}
+      <img
+        src={BRAND_LOGO_URL}
+        alt={BRAND_NAME}
+        style={{
+          width: 72,
+          height: 72,
+          borderRadius: 18,
+          boxShadow: "0 8px 32px rgba(99,179,237,0.25)",
+          marginBottom: 20,
+          animation: error ? "none" : "logoFloat 3s ease-in-out infinite",
+        }}
+      />
+
+      {/* 品牌名 */}
+      <div
+        style={{
+          fontSize: 26,
+          fontWeight: 700,
+          color: "#e8eaf6",
+          letterSpacing: 2,
+          marginBottom: 8,
+        }}
+      >
+        {BRAND_NAME}
+      </div>
+
+      {/* 状态区 */}
+      {error ? (
+        <>
+          <div
+            style={{
+              fontSize: 13,
+              color: "#fc8181",
+              marginBottom: 6,
+              maxWidth: 320,
+              textAlign: "center",
+            }}
+          >
+            {message}
+          </div>
+          <Button
+            type="primary"
+            size="small"
+            style={{ marginTop: 16, borderRadius: 8 }}
+            onClick={() => window.location.reload()}
+          >
+            重试
+          </Button>
+        </>
+      ) : (
+        <>
+          {/* 动态点 */}
+          <div style={{ display: "flex", gap: 6, marginBottom: 14, marginTop: 6 }}>
+            {[0, 1, 2].map((i) => (
+              <span
+                key={i}
+                style={{
+                  width: 7,
+                  height: 7,
+                  borderRadius: "50%",
+                  background: "#63b3ed",
+                  display: "inline-block",
+                  animation: `dotBounce 1.2s ease-in-out ${i * 0.2}s infinite`,
+                  opacity: 0.85,
+                }}
+              />
+            ))}
+          </div>
+          <div style={{ fontSize: 12, color: "#718096" }}>{message}</div>
+        </>
+      )}
+
+      {/* 内联 keyframes */}
+      <style>{`
+        @keyframes dotBounce {
+          0%, 80%, 100% { transform: translateY(0); opacity: 0.5; }
+          40% { transform: translateY(-8px); opacity: 1; }
+        }
+        @keyframes logoFloat {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-6px); }
+        }
+      `}</style>
+    </div>
+  );
+}
+
 function AuthGuard({ children }: { children: React.ReactNode }) {
-  const [status, setStatus] = useState<
-    "loading" | "auth-required" | "backend-unavailable" | "ok"
-  >("loading");
-  const [statusMessage, setStatusMessage] = useState("Starting backend...");
+  const [status, setStatus] = useState<"loading" | "unavailable" | "ok">("loading");
+  const [statusMessage, setStatusMessage] = useState("正在启动后端服务...");
 
   useEffect(() => {
     let cancelled = false;
     const signal = { cancelled: false };
     (async () => {
-      // 先等 Python 后端就绪
       const ready = await waitForRuntime(signal, (msg) => {
         if (!cancelled) setStatusMessage(msg);
       });
       if (cancelled) return;
       if (!ready) {
-        setStatus("backend-unavailable");
-        return;
-      }
-
-      try {
-        setStatusMessage("Checking login service...");
-        const res = await withTimeout(
-          authApi.getStatus(),
-          5000,
-          "User Center did not respond in time",
-        );
-        if (cancelled) return;
-        if (!res.enabled) {
-          setStatus("ok");
-          return;
-        }
-        const token = getApiToken();
-        if (!token) {
-          setStatus("auth-required");
-          return;
-        }
-        try {
-          setStatusMessage("Verifying login session...");
-          await withTimeout(
-            authApi.verify(token),
-            5000,
-            "Session verification timed out",
-          );
-          if (cancelled) return;
-          setStatus("ok");
-        } catch {
-          if (!cancelled) {
-            clearAuthToken();
-            setStatus("auth-required");
-          }
-        }
-      } catch {
-        if (!cancelled) setStatus("backend-unavailable");
+        setStatus("unavailable");
+      } else {
+        setStatus("ok");
       }
     })();
     return () => {
@@ -160,35 +205,16 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
   }, []);
 
   if (status === "loading") {
+    return <StartupScreen message={statusMessage} />;
+  }
+  if (status === "unavailable") {
     return (
-      <Result
-        icon={<Spin size="large" />}
-        title="Starting SealClaw Desktop"
-        subTitle={statusMessage}
+      <StartupScreen
+        message="后端服务未能在规定时间内启动，请检查安装是否完整。"
+        error
       />
     );
   }
-  if (status === "backend-unavailable") {
-    return (
-      <Result
-        status="warning"
-        title="Backend unavailable"
-        subTitle={`SealClaw backend did not start in time. Please check if the application is installed correctly.`}
-        extra={
-          <Button type="primary" onClick={() => window.location.reload()}>
-            Retry
-          </Button>
-        }
-      />
-    );
-  }
-  if (status === "auth-required")
-    return (
-      <Navigate
-        to={`/login?redirect=${encodeURIComponent(window.location.pathname)}`}
-        replace
-      />
-    );
   return <>{children}</>;
 }
 
@@ -237,7 +263,6 @@ function AppInner() {
         }}
       >
         <Routes>
-          <Route path="/login" element={<LoginPage />} />
           <Route
             path="/*"
             element={

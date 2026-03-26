@@ -5,6 +5,12 @@ use std::process::{Child, Command as StdCommand};
 use std::sync::Mutex;
 use tokio::process::Command;
 
+// Windows 下隐藏子进程的控制台窗口
+#[cfg(windows)]
+use std::os::windows::process::CommandExt;
+#[cfg(windows)]
+const CREATE_NO_WINDOW: u32 = 0x08000000;
+
 /// 全局子进程句柄，用于管理 agent-runtime 的生命周期
 static RUNTIME_PROCESS: Mutex<Option<Child>> = Mutex::new(None);
 
@@ -109,6 +115,8 @@ fn configure_embedded_env(cmd: &mut StdCommand, python: &str) {
     cert_cmd.args(["-c", "import certifi; print(certifi.where())"]);
     cert_cmd.env("PYTHONHOME", &env_dir_str);
     cert_cmd.env_remove("PYTHONPATH");
+    #[cfg(windows)]
+    cert_cmd.creation_flags(CREATE_NO_WINDOW);
     if let Ok(cert_output) = cert_cmd.output() {
         let cert_path = String::from_utf8_lossy(&cert_output.stdout)
             .trim()
@@ -167,6 +175,8 @@ pub async fn start_runtime() -> Result<String, String> {
             if embedded {
                 configure_embedded_env(&mut init_cmd, &python);
             }
+            #[cfg(windows)]
+            init_cmd.creation_flags(CREATE_NO_WINDOW);
             let _ = init_cmd.status();
         }
     }
@@ -179,6 +189,10 @@ pub async fn start_runtime() -> Result<String, String> {
     if embedded {
         configure_embedded_env(&mut cmd, &python);
     }
+
+    // Windows 下隐藏 Python 后端的控制台窗口
+    #[cfg(windows)]
+    cmd.creation_flags(CREATE_NO_WINDOW);
 
     // 启动子进程
     match cmd.spawn() {
