@@ -4,6 +4,11 @@
 
 !include "MUI2.nsh"
 !define MUI_ABORTWARNING
+
+; 使用 LZMA solid 模式，压缩率显著优于默认 zlib
+; /SOLID：将所有文件合并压缩，提升重复内容的压缩比
+SetCompressor /SOLID lzma
+SetCompressorDictSize 32
 ; Use custom icon from unpacked env (copied by build_win.ps1)
 !define MUI_ICON "${UNPACKED}\icon.ico"
 !define MUI_UNICON "${UNPACKED}\icon.ico"

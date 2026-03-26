@@ -29,8 +29,12 @@ from uuid import uuid4
 from urllib.parse import urlparse
 
 import aiohttp
-import dingtalk_stream
-from dingtalk_stream import ChatbotMessage
+try:
+    import dingtalk_stream
+    from dingtalk_stream import ChatbotMessage
+    _DINGTALK_AVAILABLE = True
+except ImportError:
+    _DINGTALK_AVAILABLE = False
 from agentscope_runtime.engine.schemas.agent_schemas import RunStatus
 
 from ..utils import file_url_to_local_path
@@ -1767,6 +1771,11 @@ class DingTalkChannel(BaseChannel):
                 pass
 
     async def start(self) -> None:
+        if not _DINGTALK_AVAILABLE:
+            raise ImportError(
+                "dingtalk-stream 未安装。"
+                "请运行：pip install 'dingtalk-stream>=0.24.3'"
+            )
         if not self.enabled:
             logger.debug("disabled by env DINGTALK_CHANNEL_ENABLED=0")
             return

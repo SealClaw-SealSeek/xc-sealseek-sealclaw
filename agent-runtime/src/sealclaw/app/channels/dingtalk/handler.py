@@ -7,8 +7,11 @@ import asyncio
 import logging
 from typing import Any, Callable, Dict, List, Optional
 
-import dingtalk_stream
-from dingtalk_stream import CallbackMessage, ChatbotMessage
+try:
+    import dingtalk_stream
+    from dingtalk_stream import CallbackMessage, ChatbotMessage
+except ImportError:
+    pass  # 模块可导入；运行时由 channel.py 的 start() 保护
 from agentscope_runtime.engine.schemas.agent_schemas import (
     TextContent,
 )

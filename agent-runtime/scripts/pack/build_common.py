@@ -96,8 +96,10 @@ def main() -> int:
         "--extras",
         default="full",
         help=(
-            "pip extras to install, e.g. 'full', 'ollama', or '' for core only. "
-            "Desktop builds should use 'ollama' to avoid bundling torch/mlx/whisper."
+            "pip extras to install, e.g. 'full', 'ollama', 'ollama,im', or '' for core only. "
+            "Desktop builds use 'ollama' to avoid bundling torch/mlx/whisper. "
+            "Add 'im' to bundle all IM channel SDKs (discord/telegram/feishu/dingtalk/etc.); "
+            "without 'im', channels still work but SDKs must be installed at runtime."
         ),
     )
     parser.add_argument(

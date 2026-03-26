@@ -7,8 +7,12 @@ import logging
 import threading
 from typing import Any, Optional, Union
 
-import paho.mqtt.client as mqtt
-from paho.mqtt import MQTTException
+try:
+    import paho.mqtt.client as mqtt
+    from paho.mqtt import MQTTException
+    _PAHO_AVAILABLE = True
+except ImportError:
+    _PAHO_AVAILABLE = False
 
 from agentscope_runtime.engine.schemas.agent_schemas import (
     TextContent,
@@ -284,6 +288,11 @@ class MQTTChannel(BaseChannel):
             )
 
     async def start(self) -> None:
+        if not _PAHO_AVAILABLE:
+            raise ImportError(
+                "paho-mqtt 未安装。"
+                "请运行：pip install 'paho-mqtt>=2.0.0'"
+            )
         if not self.enabled:
             logger.debug("MQTT: start() skipped (enabled=false)")
             return

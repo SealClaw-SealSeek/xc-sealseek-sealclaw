@@ -9,26 +9,16 @@ dependencies = [
     "agentscope-runtime==1.1.1",
     "httpx>=0.27.0",
     "packaging>=24.0",
-    "discord-py>=2.3",
-    "dingtalk-stream>=0.24.3",
     "uvicorn>=0.40.0",
     "apscheduler>=3.11.2,<4",
     "playwright>=1.49.0",
-    "questionary>=2.1.1",
     "mss>=9.0.0",
     "reme-ai==0.3.0.9",
     "transformers>=4.30.0",
     "python-dotenv>=1.0.0",
     "python-socks>=2.5.3",
     "onnxruntime>=1.14.1",
-    "lark-oapi>=1.5.3",
-    "python-telegram-bot>=20.0",
-    "twilio>=9.10.2",
-    "pywebview>=4.0",
     "aiofiles>=24.1.0",
-    "paho-mqtt>=2.0.0",
-    "wecom-aibot-sdk==1.0.3",
-    "matrix-nio>=0.24.0",
     "shortuuid>=1.0.0",
     "google-genai>=1.67.0",
     "tzdata>=2024.1",
@@ -88,6 +78,18 @@ whisper = [
 full = [
     "sealclaw[local,ollama,llamacpp,whisper]",
     "mlx-lm>=0.10.0; sys_platform == 'darwin'",
+]
+# IM 渠道 SDK：按需安装，不打入默认安装包
+# 打包时通过 --extras im 安装所有渠道，或按需选择
+im = [
+    "discord-py>=2.3",
+    "dingtalk-stream>=0.24.3",
+    "lark-oapi>=1.5.3",
+    "python-telegram-bot>=20.0",
+    "twilio>=9.10.2",
+    "paho-mqtt>=2.0.0",
+    "wecom-aibot-sdk==1.0.3",
+    "matrix-nio>=0.24.0",
 ]
 
 [tool.pytest.ini_options]

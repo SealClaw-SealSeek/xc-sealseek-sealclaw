@@ -27,7 +27,11 @@ from agentscope_runtime.engine.schemas.agent_schemas import (
     ImageContent,
     TextContent,
 )
-from wecom_aibot_sdk import WSClient, generate_req_id
+try:
+    from wecom_aibot_sdk import WSClient, generate_req_id
+    _WECOM_AVAILABLE = True
+except ImportError:
+    _WECOM_AVAILABLE = False
 
 from ....constant import DEFAULT_MEDIA_DIR
 from ..base import (
@@ -768,6 +772,11 @@ class WecomChannel(BaseChannel):
             self._ws_loop = None
 
     async def start(self) -> None:
+        if not _WECOM_AVAILABLE:
+            raise ImportError(
+                "wecom-aibot-sdk 未安装。"
+                "请运行：pip install 'wecom-aibot-sdk==1.0.3'"
+            )
         if not self.enabled:
             logger.debug("wecom channel disabled")
             return

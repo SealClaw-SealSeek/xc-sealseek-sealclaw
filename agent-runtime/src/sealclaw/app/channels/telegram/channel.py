@@ -12,16 +12,20 @@ import uuid
 from pathlib import Path
 from typing import Any, Optional, Union
 
-from telegram import BotCommand
-from telegram.constants import ParseMode
-from telegram.error import (
-    BadRequest,
-    Forbidden,
-    InvalidToken,
-    NetworkError,
-    RetryAfter,
-    TimedOut,
-)
+try:
+    from telegram import BotCommand
+    from telegram.constants import ParseMode
+    from telegram.error import (
+        BadRequest,
+        Forbidden,
+        InvalidToken,
+        NetworkError,
+        RetryAfter,
+        TimedOut,
+    )
+    _TELEGRAM_AVAILABLE = True
+except ImportError:
+    _TELEGRAM_AVAILABLE = False
 
 from agentscope_runtime.engine.schemas.agent_schemas import (
     TextContent,
@@ -978,6 +982,11 @@ class TelegramChannel(BaseChannel):
             delay = min(delay * _RECONNECT_FACTOR, _RECONNECT_MAX_S)
 
     async def start(self) -> None:
+        if not _TELEGRAM_AVAILABLE:
+            raise ImportError(
+                "python-telegram-bot 未安装。"
+                "请运行：pip install 'python-telegram-bot>=20.0'"
+            )
         if not self.enabled or not self._bot_token:
             logger.debug(
                 "telegram: start() skipped (enabled=%s, token=%s)",

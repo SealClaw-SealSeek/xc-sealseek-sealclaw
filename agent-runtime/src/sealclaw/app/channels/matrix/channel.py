@@ -19,17 +19,21 @@ from agentscope_runtime.engine.schemas.agent_schemas import (
     TextContent,
     VideoContent,
 )
-from nio import (
-    AsyncClient,
-    MatrixRoom,
-    RoomMessageAudio,
-    RoomMessageFile,
-    RoomMessageImage,
-    RoomMessageText,
-    RoomMessageVideo,
-    RoomSendError,
-    UploadError,
-)
+try:
+    from nio import (
+        AsyncClient,
+        MatrixRoom,
+        RoomMessageAudio,
+        RoomMessageFile,
+        RoomMessageImage,
+        RoomMessageText,
+        RoomMessageVideo,
+        RoomSendError,
+        UploadError,
+    )
+    _MATRIX_AVAILABLE = True
+except ImportError:
+    _MATRIX_AVAILABLE = False
 
 from ....config.config import MatrixConfig
 from ..base import (
@@ -417,6 +421,11 @@ class MatrixChannel(BaseChannel):
                 Path(temp_path).unlink(missing_ok=True)
 
     async def start(self) -> None:
+        if not _MATRIX_AVAILABLE:
+            raise ImportError(
+                "matrix-nio 未安装。"
+                "请运行：pip install 'matrix-nio>=0.24.0'"
+            )
         if (
             not self.enabled
             or not self.homeserver
