@@ -63,17 +63,10 @@ class GeminiProvider(Provider):
             async for _ in await client.aio.models.list():
                 break
             return True, ""
-        except genai_errors.APIError:
-            return (
-                False,
-                "Failed to connect to Google Gemini API. "
-                "Check your API key.",
-            )
-        except Exception:
-            return (
-                False,
-                "Unknown exception when connecting to Google Gemini API.",
-            )
+        except genai_errors.APIError as e:
+            return False, f"{type(e).__name__}: {e}"
+        except Exception as e:
+            return False, f"{type(e).__name__}: {e}"
 
     async def fetch_models(self, timeout: float = 10) -> List[ModelInfo]:
         """Fetch available models from Gemini API."""

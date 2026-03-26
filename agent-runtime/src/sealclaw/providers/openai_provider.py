@@ -55,13 +55,10 @@ class OpenAIProvider(Provider):
         try:
             await client.models.list(timeout=timeout)
             return True, ""
-        except APIError:
-            return False, f"API error when connecting to `{self.base_url}`"
-        except Exception:
-            return (
-                False,
-                f"Unknown exception when connecting to `{self.base_url}`",
-            )
+        except APIError as e:
+            return False, f"{type(e).__name__}: {e}"
+        except Exception as e:
+            return False, f"{type(e).__name__}: {e}"
 
     async def fetch_models(self, timeout: float = 5) -> List[ModelInfo]:
         """Fetch available models."""
