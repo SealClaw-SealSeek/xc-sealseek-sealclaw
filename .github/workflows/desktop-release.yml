@@ -1,0 +1,317 @@
+# Build SealClaw Desktop: Tauri binary + conda-pack Python environment
+# Windows: NSIS installer, macOS: .app bundle (.dmg)
+# 触发方式：推送 v* tag 自动打包发版，也可手动触发。
+
+name: SealClaw Desktop Build
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-macos:
+    runs-on: macos-14
+    defaults:
+      run:
+        working-directory: agent-runtime
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Get version
+        id: version
+        run: echo "version=$(sed -n 's/^__version__[[:space:]]*=[[:space:]]*"\([^"]*\)".*/\1/p' src/sealclaw/__version__.py)" >> $GITHUB_OUTPUT
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: package-lock.json
+
+      - name: Install npm dependencies (workspace)
+        run: npm ci
+        working-directory: .
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Rust cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: "desktop-client/src-tauri -> target"
+
+      - name: Set up Miniconda
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          auto-update-conda: true
+          python-version: "3.12"
+          activate-environment: "sealclaw-build"
+          condarc-file: agent-runtime/.github/condarc
+          conda-remove-defaults: true
+
+      - name: Install create-dmg
+        run: brew install create-dmg
+
+      - name: Clean dist directory
+        run: rm -rf dist && mkdir -p dist
+
+      - name: Build macOS .app and DMG
+        shell: bash -l {0}
+        run: |
+          chmod +x scripts/pack/build_macos.sh
+          conda run -n sealclaw-build bash -c 'CREATE_DMG=1 ./scripts/pack/build_macos.sh'
+
+      - name: Sign macOS artifact with Tauri signer
+        working-directory: .
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        run: |
+          [ -z "$TAURI_SIGNING_PRIVATE_KEY" ] && echo "No signing key, skipping." && exit 0
+          for f in agent-runtime/dist/SealClaw-*.dmg; do
+            [ -f "$f" ] || continue
+            echo "Signing $f..."
+            ./desktop-client/node_modules/.bin/tauri signer sign --private-key "$TAURI_SIGNING_PRIVATE_KEY" --password "$TAURI_SIGNING_PRIVATE_KEY_PASSWORD" "$f"
+            echo " -> $f.sig created"
+          done
+
+      - name: List dist (on failure)
+        if: failure()
+        run: |
+          echo "=== dist contents ==="
+          find dist -maxdepth 3 -type f 2>/dev/null || true
+
+      - name: Upload macOS artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: SealClaw-Desktop-macOS-${{ steps.version.outputs.version }}
+          path: |
+            agent-runtime/dist/SealClaw-*.dmg
+            agent-runtime/dist/SealClaw-*.dmg.sig
+
+  build-windows:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: agent-runtime
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Get version
+        id: version
+        shell: pwsh
+        run: |
+          $content = Get-Content src/sealclaw/__version__.py -Raw
+          if ($content -match '__version__\s*=\s*"([^"]+)"') {
+            $v = $Matches[1]
+          } else {
+            throw "Failed to extract version from __version__.py"
+          }
+          "version=$v" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: package-lock.json
+
+      - name: Install npm dependencies (workspace)
+        run: npm ci
+        working-directory: .
+
+      - name: Install rollup Windows native module
+        shell: pwsh
+        working-directory: desktop-client
+        run: npm install @rollup/rollup-win32-x64-msvc
+
+      - name: Install Tauri CLI Windows native module
+        shell: pwsh
+        working-directory: desktop-client
+        run: npm install @tauri-apps/cli-win32-x64-msvc
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Rust cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: "desktop-client/src-tauri -> target"
+
+      - name: Set up Miniconda
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          auto-update-conda: true
+          python-version: "3.12"
+          activate-environment: "sealclaw-build"
+          condarc-file: agent-runtime/.github/condarc
+          conda-remove-defaults: true
+
+      - name: Install NSIS
+        shell: pwsh
+        run: |
+          choco install nsis -y
+          # 写入 GITHUB_PATH 确保后续步骤可用
+          "C:\Program Files (x86)\NSIS" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          # 用全路径验证（避免当前会话 PATH 未刷新问题）
+          & "C:\Program Files (x86)\NSIS\makensis.exe" /VERSION
+
+      - name: Clean dist directory
+        shell: pwsh
+        run: |
+          if (Test-Path dist) {
+            Remove-Item -Recurse -Force dist
+          }
+          New-Item -ItemType Directory -Force -Path dist | Out-Null
+
+      - name: Build Windows installer
+        shell: pwsh
+        env:
+          DIST: C:\dist
+        run: conda run -n sealclaw-build pwsh -File ./scripts/pack/build_win.ps1
+
+      - name: Sign Windows artifact with Tauri signer
+        working-directory: .
+        shell: pwsh
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        run: |
+          if (-not $env:TAURI_SIGNING_PRIVATE_KEY) { Write-Host "No signing key, skipping."; exit 0 }
+          Get-ChildItem C:\dist\SealClaw-Setup-*.exe | ForEach-Object {
+            Write-Host "Signing $_..."
+            .\desktop-client\node_modules\.bin\tauri signer sign --private-key $env:TAURI_SIGNING_PRIVATE_KEY --password $env:TAURI_SIGNING_PRIVATE_KEY_PASSWORD $_.FullName
+            Write-Host " -> $($_.FullName).sig created"
+          }
+
+      - name: List dist (on failure)
+        if: failure()
+        shell: pwsh
+        run: |
+          Write-Host "=== dist contents ==="
+          Get-ChildItem -Path dist -Recurse -Depth 2 -ErrorAction SilentlyContinue | ForEach-Object { $_.FullName }
+          Write-Host "=== dist\win-unpacked contents ==="
+          Get-ChildItem -Path "dist\win-unpacked" -Recurse -Depth 2 -ErrorAction SilentlyContinue | ForEach-Object { $_.FullName }
+
+      - name: Upload Windows artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: SealClaw-Desktop-Windows-${{ steps.version.outputs.version }}
+          path: |
+            C:\dist\SealClaw-Setup-*.exe
+            C:\dist\SealClaw-Setup-*.exe.sig
+
+  upload-release:
+    needs: [build-windows, build-macos]
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+
+      - name: Move artifacts to root for upload
+        run: |
+          mv SealClaw-Desktop-Windows-*/SealClaw-Setup-*.exe . 2>/dev/null || true
+          mv SealClaw-Desktop-Windows-*/SealClaw-Setup-*.exe.sig . 2>/dev/null || true
+          mv SealClaw-Desktop-macOS-*/SealClaw-*.dmg . 2>/dev/null || true
+          mv SealClaw-Desktop-macOS-*/SealClaw-*.dmg.sig . 2>/dev/null || true
+
+      - name: Generate update manifest (latest.json)
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          VERSION="${TAG#v}"
+          DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          NOTES="SealClaw Desktop ${VERSION}"
+
+          # 读取签名文件内容（base64 编码）
+          WIN_SIG=""
+          MAC_SIG=""
+          for f in SealClaw-Setup-*.exe.sig; do
+            [ -f "$f" ] && WIN_SIG=$(cat "$f")
+          done
+          for f in SealClaw-*-macOS.dmg.sig; do
+            [ -f "$f" ] && MAC_SIG=$(cat "$f")
+          done
+
+          # 获取下载 URL 前缀
+          GH_BASE="https://github.com/${{ github.repository }}/releases/download/${TAG}"
+
+          # 构造 Tauri updater 格式的 JSON 清单
+          cat > latest.json <<MANIFEST
+          {
+            "version": "${VERSION}",
+            "notes": "${NOTES}",
+            "pub_date": "${DATE}",
+            "platforms": {
+              "darwin-aarch64": {
+                "url": "${GH_BASE}/$(ls SealClaw-*-macOS.dmg 2>/dev/null | head -1)",
+                "signature": "${MAC_SIG}"
+              },
+              "darwin-x86_64": {
+                "url": "${GH_BASE}/$(ls SealClaw-*-macOS.dmg 2>/dev/null | head -1)",
+                "signature": "${MAC_SIG}"
+              },
+              "windows-x86_64": {
+                "url": "${GH_BASE}/$(ls SealClaw-Setup-*.exe 2>/dev/null | head -1)",
+                "signature": "${WIN_SIG}"
+              }
+            }
+          }
+          MANIFEST
+          echo "Generated latest.json:"
+          cat latest.json
+
+      - name: Upload to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            SealClaw-Setup-*.exe
+            SealClaw-Setup-*.exe.sig
+            SealClaw-*-macOS.dmg
+            SealClaw-*-macOS.dmg.sig
+            latest.json
+          fail_on_unmatched_files: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload to Gitee Release
+        if: vars.GITEE_OWNER != '' && vars.GITEE_REPO != ''
+        env:
+          GITEE_TOKEN: ${{ secrets.GITEE_TOKEN }}
+          GITEE_OWNER: ${{ vars.GITEE_OWNER }}
+          GITEE_REPO: ${{ vars.GITEE_REPO }}
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          RELEASE_ID=$(curl -s "https://gitee.com/api/v5/repos/${GITEE_OWNER}/${GITEE_REPO}/releases/tags/${TAG}?access_token=${GITEE_TOKEN}" | jq -r '.id // empty')
+
+          if [ -z "$RELEASE_ID" ]; then
+            echo "Creating Gitee release for tag $TAG..."
+            RELEASE_ID=$(curl -s -X POST "https://gitee.com/api/v5/repos/${GITEE_OWNER}/${GITEE_REPO}/releases" \
+              -H "Content-Type: application/json" \
+              -d "{\"access_token\":\"${GITEE_TOKEN}\",\"tag_name\":\"${TAG}\",\"name\":\"${TAG}\",\"body\":\"Auto-uploaded from GitHub Actions\"}" \
+              | jq -r '.id')
+          fi
+
+          echo "Uploading to Gitee Release ID: $RELEASE_ID"
+          for f in SealClaw-Setup-*.exe SealClaw-Setup-*.exe.sig SealClaw-*-macOS.dmg SealClaw-*-macOS.dmg.sig latest.json; do
+            [ -f "$f" ] || continue
+            echo "Uploading $f..."
+            curl -s -X POST "https://gitee.com/api/v5/repos/${GITEE_OWNER}/${GITEE_REPO}/releases/${RELEASE_ID}/attach_files" \
+              -H "Content-Type: multipart/form-data" \
+              -F "access_token=${GITEE_TOKEN}" \
+              -F "file=@${f}"
+            echo " -> done"
+          done
