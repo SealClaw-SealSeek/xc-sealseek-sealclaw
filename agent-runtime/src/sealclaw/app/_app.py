@@ -153,6 +153,8 @@ agent_app = AgentApp(
 async def lifespan(
     app: FastAPI,
 ):  # pylint: disable=too-many-statements,too-many-branches
+    import asyncio
+
     startup_start_time = time.time()
     add_sealclaw_file_handler(WORKING_DIR / "sealclaw.log")
 
@@ -161,22 +163,27 @@ async def lifespan(
 
     auto_register_from_env()
 
-    try:
-        from ..utils.telemetry import (
-            collect_and_upload_telemetry,
-            has_telemetry_been_collected,
-            is_telemetry_opted_out,
-        )
+    # 遥测在后台执行：包含 nvidia-smi(3s) + HTTP POST(2s)，不阻塞 uvicorn ready
 
-        if not is_telemetry_opted_out(
-            WORKING_DIR,
-        ) and not has_telemetry_been_collected(WORKING_DIR):
-            collect_and_upload_telemetry(WORKING_DIR)
-    except Exception:
-        logger.debug(
-            "Telemetry collection skipped due to error",
-            exc_info=True,
-        )
+    async def _telemetry_background():
+        try:
+            from ..utils.telemetry import (
+                collect_and_upload_telemetry,
+                has_telemetry_been_collected,
+                is_telemetry_opted_out,
+            )
+
+            if not is_telemetry_opted_out(
+                WORKING_DIR,
+            ) and not has_telemetry_been_collected(WORKING_DIR):
+                await asyncio.to_thread(collect_and_upload_telemetry, WORKING_DIR)
+        except Exception:
+            logger.debug(
+                "Telemetry collection skipped due to error",
+                exc_info=True,
+            )
+
+    asyncio.create_task(_telemetry_background())
 
     # --- Multi-agent migration and initialization ---
     logger.info("Checking for legacy config migration...")
@@ -187,8 +194,17 @@ async def lifespan(
     logger.info("Initializing MultiAgentManager...")
     multi_agent_manager = MultiAgentManager()
 
-    # Start all configured agents (handled by manager)
-    await multi_agent_manager.start_all_configured_agents()
+    # Agent 启动在后台执行，不阻塞 uvicorn ready
+    # Memory(ChromaDB) 和 MCP client 连接可能耗时数秒，
+    # 首次对话请求到达时 agent 通常已就绪
+    async def _start_agents_background():
+        try:
+            await multi_agent_manager.start_all_configured_agents()
+            logger.info("All agents started successfully")
+        except Exception:
+            logger.exception("Background agent startup failed")
+
+    asyncio.create_task(_start_agents_background())
 
     # --- Model provider manager (non-reloadable, in-memory) ---
     provider_manager = ProviderManager.get_instance()

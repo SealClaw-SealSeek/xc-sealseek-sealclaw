@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import annotations
 
+import importlib
 import logging
 import sys
 import time
@@ -16,109 +17,16 @@ if sys.platform == "win32":
     except (AttributeError, OSError):
         pass
 
-# pylint: disable=wrong-import-position
-
 logger = logging.getLogger(__name__)
 # Store init timings so app_cmd can re-log after setting log level to debug.
 _init_timings: list[tuple[str, float]] = []
 _t0_main = time.perf_counter()
 _init_timings.append(("main.py loaded", 0.0))
 
-
-def _record(label: str, elapsed: float) -> None:
-    _init_timings.append((label, elapsed))
-    logger.debug("%.3fs %s", elapsed, label)
-
-
-# Timed imports below: order and placement are intentional (E402/C0413).
-_t = time.perf_counter()
 from ..config.utils import read_last_api  # noqa: E402
-
-_record("..config.utils", time.perf_counter() - _t)
-
-_t = time.perf_counter()
 from ..__version__ import __version__  # noqa: E402
 
-_record("..__version__", time.perf_counter() - _t)
-
-_t = time.perf_counter()
-from .app_cmd import app_cmd  # noqa: E402
-
-_record(".app_cmd", time.perf_counter() - _t)
-
-_t = time.perf_counter()
-from .channels_cmd import channels_group  # noqa: E402
-
-_record(".channels_cmd", time.perf_counter() - _t)
-
-_t = time.perf_counter()
-from .chats_cmd import chats_group  # noqa: E402
-
-_record(".chats_cmd", time.perf_counter() - _t)
-
-_t = time.perf_counter()
-from .daemon_cmd import daemon_group  # noqa: E402
-
-_record(".daemon_cmd", time.perf_counter() - _t)
-
-_t = time.perf_counter()
-from .clean_cmd import clean_cmd  # noqa: E402
-
-_record(".clean_cmd", time.perf_counter() - _t)
-
-_t = time.perf_counter()
-from .cron_cmd import cron_group  # noqa: E402
-
-_record(".cron_cmd", time.perf_counter() - _t)
-
-_t = time.perf_counter()
-from .env_cmd import env_group  # noqa: E402
-
-_record(".env_cmd", time.perf_counter() - _t)
-
-_t = time.perf_counter()
-from .init_cmd import init_cmd  # noqa: E402
-
-_record(".init_cmd", time.perf_counter() - _t)
-
-_t = time.perf_counter()
-from .providers_cmd import models_group  # noqa: E402
-
-_record(".providers_cmd", time.perf_counter() - _t)
-
-_t = time.perf_counter()
-from .skills_cmd import skills_group  # noqa: E402
-
-_record(".skills_cmd", time.perf_counter() - _t)
-
-_t = time.perf_counter()
-from .uninstall_cmd import uninstall_cmd  # noqa: E402
-
-_record(".uninstall_cmd", time.perf_counter() - _t)
-
-_t = time.perf_counter()
-from .desktop_cmd import desktop_cmd  # noqa: E402
-
-_record(".desktop_cmd", time.perf_counter() - _t)
-
-_t = time.perf_counter()
-from .update_cmd import update_cmd  # noqa: E402
-
-_record(".update_cmd", time.perf_counter() - _t)
-
-_t = time.perf_counter()
-from .shutdown_cmd import shutdown_cmd  # noqa: E402
-
-_record(".shutdown_cmd", time.perf_counter() - _t)
-
-_t = time.perf_counter()
-from .auth_cmd import auth_group  # noqa: E402
-
-_record(".auth_cmd", time.perf_counter() - _t)
-
-_total = time.perf_counter() - _t0_main
-_init_timings.append(("(total imports)", _total))
-logger.debug("%.3fs (total imports)", _total)
+_init_timings.append(("base imports", time.perf_counter() - _t0_main))
 
 
 def log_init_timings() -> None:
@@ -127,7 +35,63 @@ def log_init_timings() -> None:
         logger.debug("%.3fs %s", elapsed, label)
 
 
-@click.group(context_settings={"help_option_names": ["-h", "--help"]})
+# 子命令懒加载映射：(模块路径, 导出名)
+# 只有在用户实际调用对应子命令时才 import 对应模块，
+# 避免 `sealclaw app` 时加载全部 14 个子命令的依赖链
+_LAZY_COMMANDS: dict[str, tuple[str, str]] = {
+    "app": (".app_cmd", "app_cmd"),
+    "channels": (".channels_cmd", "channels_group"),
+    "chats": (".chats_cmd", "chats_group"),
+    "daemon": (".daemon_cmd", "daemon_group"),
+    "clean": (".clean_cmd", "clean_cmd"),
+    "cron": (".cron_cmd", "cron_group"),
+    "env": (".env_cmd", "env_group"),
+    "init": (".init_cmd", "init_cmd"),
+    "models": (".providers_cmd", "models_group"),
+    "skills": (".skills_cmd", "skills_group"),
+    "uninstall": (".uninstall_cmd", "uninstall_cmd"),
+    "desktop": (".desktop_cmd", "desktop_cmd"),
+    "update": (".update_cmd", "update_cmd"),
+    "shutdown": (".shutdown_cmd", "shutdown_cmd"),
+    "auth": (".auth_cmd", "auth_group"),
+}
+
+
+class LazyGroup(click.Group):
+    """按需加载子命令：只在用户实际调用时才 import 对应模块。"""
+
+    def __init__(self, *args, lazy_commands: dict | None = None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._lazy_commands = lazy_commands or {}
+
+    def list_commands(self, ctx: click.Context) -> list[str]:
+        # 合并已注册命令和懒加载命令
+        base = list(super().list_commands(ctx))
+        lazy = sorted(self._lazy_commands.keys())
+        return base + [c for c in lazy if c not in base]
+
+    def get_command(self, ctx: click.Context, cmd_name: str) -> click.Command | None:
+        # 先检查已注册的命令
+        cmd = super().get_command(ctx, cmd_name)
+        if cmd is not None:
+            return cmd
+        # 懒加载
+        if cmd_name in self._lazy_commands:
+            module_path, attr_name = self._lazy_commands[cmd_name]
+            t = time.perf_counter()
+            mod = importlib.import_module(module_path, package=__package__)
+            elapsed = time.perf_counter() - t
+            _init_timings.append((f"lazy:{module_path}", elapsed))
+            logger.debug("%.3fs lazy import %s", elapsed, module_path)
+            return getattr(mod, attr_name)
+        return None
+
+
+@click.group(
+    cls=LazyGroup,
+    lazy_commands=_LAZY_COMMANDS,
+    context_settings={"help_option_names": ["-h", "--help"]},
+)
 @click.version_option(version=__version__, prog_name="SealClaw")
 @click.option("--host", default=None, help="API Host")
 @click.option(
@@ -153,20 +117,3 @@ def cli(ctx: click.Context, host: str | None, port: int | None) -> None:
     ctx.ensure_object(dict)
     ctx.obj["host"] = host
     ctx.obj["port"] = port
-
-
-cli.add_command(app_cmd)
-cli.add_command(channels_group)
-cli.add_command(daemon_group)
-cli.add_command(chats_group)
-cli.add_command(clean_cmd)
-cli.add_command(cron_group)
-cli.add_command(env_group)
-cli.add_command(init_cmd)
-cli.add_command(models_group)
-cli.add_command(skills_group)
-cli.add_command(uninstall_cmd)
-cli.add_command(desktop_cmd)
-cli.add_command(update_cmd)
-cli.add_command(shutdown_cmd)
-cli.add_command(auth_group)
