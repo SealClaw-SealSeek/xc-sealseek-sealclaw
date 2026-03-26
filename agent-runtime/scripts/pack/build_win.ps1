@@ -188,19 +188,11 @@ if (Test-Path $pythonExe) {
   Write-Host "[build_win] WARN: python.exe not found at $pythonExe, skipping bytecode compilation" -ForegroundColor Yellow
 }
 
-Write-Host "== Removing .py source files (keeping .pyc bytecode only) =="
-# 已经通过 compileall 生成了 .pyc，.py 源文件对最终用户无用
-# 排除 Scripts/ 下的入口脚本（部分工具依赖 .py 形式运行）
-$pyRemoveStart = Get-Date
-$pyCount = 0
-Get-ChildItem -Path $EnvRoot -Recurse -Filter "*.py" -ErrorAction SilentlyContinue |
-    Where-Object { $_.FullName -notmatch '\\Scripts\\' -and $_.FullName -notmatch '/Scripts/' } |
-    ForEach-Object {
-        Remove-Item -Force $_.FullName -ErrorAction SilentlyContinue
-        $pyCount++
-    }
-$pyRemoveEnd = Get-Date
-Write-Host "[build_win] Removed $pyCount .py files in $([math]::Round(($pyRemoveEnd - $pyRemoveStart).TotalSeconds, 1))s"
+# NOTE: .py 源文件暂时保留。
+# 删除 .py 后 transformers/chromadb 等包会因为 __file__ 指向 __pycache__/ 而无法
+# 定位资源文件（config.json 等），导致运行时崩溃。如需启用，需先将 .pyc 从
+# __pycache__/ 移到包目录后再删 .py（sourceless 分发方式），暂不处理。
+Write-Host "[build_win] Skipping .py removal (kept for runtime resource resolution safety)"
 
 # 编译 Tauri 二进制（custom-protocol 会将前端编译进二进制）
 $DesktopClientDir = Join-Path (Split-Path $RepoRoot -Parent) "desktop-client"
