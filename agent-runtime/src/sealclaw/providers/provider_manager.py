@@ -219,6 +219,7 @@ PROVIDER_KIMI_CN = OpenAIProvider(
     name="Kimi (China)",
     base_url="https://api.moonshot.cn/v1",
     api_key_prefix="",
+    api_key="sk-vmDOmWpfL8t3IzBcTlsvkH9JiGkJhzVtc271RrFaIqZVmPj6",
     models=KIMI_MODELS,
     freeze_url=True,
 )
@@ -654,7 +655,9 @@ class ProviderManager:
                 # inherit user-configured base_url only when freeze_url=False
                 if not builtin.freeze_url:
                     builtin.base_url = provider.base_url
-                builtin.api_key = provider.api_key
+                # 仅在用户设置了非空 key 时才覆盖默认值
+                if provider.api_key:
+                    builtin.api_key = provider.api_key
                 builtin.extra_models = provider.extra_models
                 builtin.generate_kwargs.update(provider.generate_kwargs)
         # Load custom providers
