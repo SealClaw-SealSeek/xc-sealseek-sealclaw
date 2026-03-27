@@ -65,6 +65,8 @@ jobs:
 
       - name: Build macOS .app and DMG
         shell: bash -l {0}
+        env:
+          MACOSX_DEPLOYMENT_TARGET: "10.13"
         run: |
           chmod +x scripts/pack/build_macos.sh
           conda run -n sealclaw-build bash -c 'CREATE_DMG=1 ./scripts/pack/build_macos.sh'

@@ -59,6 +59,7 @@ fi
 # 编译 Tauri 二进制（custom-protocol 会将前端编译进二进制）
 DESKTOP_CLIENT_DIR="${REPO_ROOT}/../desktop-client"
 echo "== Building Tauri binary =="
+export MACOSX_DEPLOYMENT_TARGET=10.13
 (cd "$DESKTOP_CLIENT_DIR" && npm install && npm run build)
 (cd "$DESKTOP_CLIENT_DIR/src-tauri" && cargo build --release)
 
